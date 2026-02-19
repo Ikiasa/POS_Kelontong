@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createPinia } from 'pinia';
 import { ZiggyVue } from 'ziggy-js';
 import VueApexCharts from 'vue3-apexcharts';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 const appName = import.meta.env.VITE_APP_NAME || 'POS System';
 
@@ -25,3 +26,6 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+
+// Inject Speed Insights after app initialization
+injectSpeedInsights();
