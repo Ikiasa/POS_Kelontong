@@ -4,12 +4,38 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// Force error reporting for debugging Vercel 500
+// 1. Force error reporting (Verbose)
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-ini_set('log_errors', '1');
-ini_set('error_log', 'php://stderr');
 error_reporting(E_ALL);
+
+// 2. Validate Vercel Environment Variables
+if (isset($_ENV['VERCEL'])) {
+    $missingVars = [];
+    $requiredVars = ['APP_KEY', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
+    
+    foreach ($requiredVars as $var) {
+        if (!getenv($var) && empty($_SERVER[$var]) && empty($_ENV[$var])) {
+            $missingVars[] = $var;
+        }
+    }
+
+    if (!empty($missingVars)) {
+        http_response_code(500);
+        echo "<div style='font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto;'>";
+        echo "<h1 style='color: #ef4444;'>Deployment Configuration Error</h1>";
+        echo "<p>The following Environment Variables are missing in Vercel:</p>";
+        echo "<ul style='background: #f4f4f5; padding: 1rem 2rem; border-radius: 8px;'>";
+        foreach ($missingVars as $var) {
+            echo "<li><strong>{$var}</strong></li>";
+        }
+        echo "</ul>";
+        echo "<p>Please add them in <strong>Settings > Environment Variables</strong> on your Vercel Dashboard.</p>";
+        echo "<p><em>Note: You cannot use localhost settings. You must use a cloud database (e.g. Neon, Supabase).</em></p>";
+        echo "</div>";
+        exit;
+    }
+}
 
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
