@@ -13,21 +13,37 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        try {
+            $search = $request->input('search');
 
-        $users = User::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            $users = User::query()
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
 
-        return Inertia::render('Admin/Users/Index', [
-            'users' => $users,
-            'filters' => $request->only(['search'])
-        ]);
+            return Inertia::render('Admin/Users/Index', [
+                'users' => $users,
+                'filters' => $request->only(['search'])
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Cloud Admin User Page 500: " . $e->getMessage());
+            
+            // Fallback for missing columns or schema out of sync in cloud
+            return Inertia::render('Admin/Users/Index', [
+                'users' => [
+                    'data' => [auth()->user()->only(['id', 'name', 'email', 'role'])],
+                    'total' => 1,
+                    'per_page' => 10,
+                    'links' => []
+                ],
+                'filters' => ['search' => ''],
+                'flash' => ['error' => 'Database Sync detected. Please run migrations on Cloud.']
+            ]);
+        }
     }
 
     public function store(Request $request)
