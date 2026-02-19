@@ -15,7 +15,17 @@ import {
     Zap,
     Box,
     Clock,
-    BarChart3
+    BarChart3,
+    Database,
+    Users,
+    RefreshCcw,
+    ClipboardCheck,
+    Truck,
+    Calendar,
+    PieChart,
+    Globe,
+    Bot,
+    Wallet
 } from 'lucide-vue-next';
 
 defineProps({
@@ -342,6 +352,100 @@ const demoProducts = [
                             </p>
                         </div>
                         <div class="absolute bottom-0 left-0 h-1 w-0 bg-green-600 transition-all duration-500 group-hover:w-full"></div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive All Features Grid -->
+                <div class="mt-40">
+                    <div class="text-center max-w-2xl mx-auto mb-16">
+                        <h2 class="text-3xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">Ekosistem POS Terlengkap</h2>
+                        <p class="text-zinc-500 dark:text-zinc-400">Segala instrumen yang Anda butuhkan untuk menguasai pasar retail.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Operational -->
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Wallet :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">QRIS Dinamis</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Terima pembayaran e-wallet (GoPay, OVO, Dana) dengan QR code otomatis per transaksi.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Users :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Manajemen Pelanggan</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Simpan data pelanggan, riwayat belanja, dan berikan promo loyalitas khusus.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <RefreshCcw :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Sistem Retur Mudah</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Kelola pengembalian barang rusak atau salah beli dengan pencatatan stok yang akurat.</p>
+                        </div>
+
+                        <!-- Inventory -->
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <ClipboardCheck :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Audit Stok (Opname)</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Lakukan pencocokan stok fisik vs sistem dengan cepat tanpa menghentikan penjualan.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Truck :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Manajemen Supplier</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Kelola database supplier, harga beli termurah, dan buat Purchase Order otomatis.</p>
+                        </div>
+
+                        <!-- Financial -->
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <PieChart :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Expense Tracking</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Catat semua pengeluaran operasional (listrik, gaji, sewa) untuk tahu profit bersih.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-zinc-800 dark:text-gray-300 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Database :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Cloud Backup</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Data transaksi Anda aman tersimpan di cloud dengan cadangan harian otomatis.</p>
+                        </div>
+
+                        <!-- Intelligence -->
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Bot :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">AI Voice Assistant</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Tanyakan stok atau laporan lewat suara. Asisten AI siap membantu navigasi Anda.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Calendar :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Forecast Penjualan</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Sistem memprediksi tren penjualan bulan depan berdasarkan data historis toko.</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
+                            <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/20 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Globe :size="20" />
+                            </div>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Remote Monitoring</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Pantau perkembangan toko dari mana saja, kapan saja, langsung melalui smartphone Anda.</p>
+                        </div>
                     </div>
                 </div>
             </div>
