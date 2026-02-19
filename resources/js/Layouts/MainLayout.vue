@@ -141,11 +141,14 @@ const toggleTheme = () => {
                             <BarChart3 :size="18" class="group-hover:text-brand-400 transition-colors" />
                             Analytics
                         </Link>
-                        <Link :href="route('hq.intelligence')" 
-                              class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium group"
+                        <Link href="/hq-intelligence" 
+                              class="flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium group"
                               :class="$page.url.startsWith('/hq-intelligence') ? 'bg-brand-900/20 text-brand-300 shadow-inner shadow-black/20 ring-1 ring-brand-900/50' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-                            <ShieldCheck :size="18" class="group-hover:text-amber-400 transition-colors" />
-                            HQ Intelligence
+                            <div class="flex items-center gap-3">
+                                <ShieldCheck :size="18" class="group-hover:text-amber-400 transition-colors" />
+                                HQ Intelligence
+                            </div>
+                            <span class="px-1.5 py-0.5 rounded bg-red-600 text-[8px] font-black text-white animate-pulse">NEW</span>
                         </Link>
                         <Link href="/forecast" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white text-sm font-medium transition-colors group">
                             <Sparkles :size="18" class="group-hover:text-brand-400 transition-colors" />

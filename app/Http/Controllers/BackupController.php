@@ -12,10 +12,18 @@ class BackupController extends Controller
 
     public function index()
     {
-        $backups = $this->backupService->getBackups();
-        return \Inertia\Inertia::render('Admin/Backups/Index', [
-            'backups' => $backups
-        ]);
+        try {
+            $backups = $this->backupService->getBackups();
+            return \Inertia\Inertia::render('Admin/Backups/Index', [
+                'backups' => $backups
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Backup Page 500: " . $e->getMessage());
+            return \Inertia\Inertia::render('Admin/Backups/Index', [
+                'backups' => [],
+                'flash' => ['error' => 'Backup storage unavailable on Cloud (Read-Only).']
+            ]);
+        }
     }
 
     public function store()

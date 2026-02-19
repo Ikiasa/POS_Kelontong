@@ -16,17 +16,27 @@ class FinancialController extends Controller
 
     public function index()
     {
-        $storeId = 1; // Auth check needed
-        
-        $overdueInstallments = $this->installmentService->getOverdueInstallments($storeId);
-        $agingReport = $this->installmentService->getAgingReport($storeId);
-        $budgetStatus = $this->budgetService->getBudgetStatus($storeId);
+        try {
+            $storeId = 1; // Auth check needed
+            
+            $overdueInstallments = $this->installmentService->getOverdueInstallments($storeId);
+            $agingReport = $this->installmentService->getAgingReport($storeId);
+            $budgetStatus = $this->budgetService->getBudgetStatus($storeId);
 
-        return \Inertia\Inertia::render('Financial/Index', [
-            'overdueInstallments' => $overdueInstallments,
-            'agingReport' => $agingReport,
-            'budgetStatus' => $budgetStatus
-        ]);
+            return \Inertia\Inertia::render('Financial/Index', [
+                'overdueInstallments' => $overdueInstallments,
+                'agingReport' => $agingReport,
+                'budgetStatus' => $budgetStatus
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Financial Index 500: " . $e->getMessage());
+            return \Inertia\Inertia::render('Financial/Index', [
+                'overdueInstallments' => [],
+                'agingReport' => [],
+                'budgetStatus' => [],
+                'flash' => ['error' => 'Financial table sync in progress.']
+            ]);
+        }
     }
 
     public function reports(Request $request)
@@ -54,10 +64,17 @@ class FinancialController extends Controller
 
     public function accounts()
     {
-        $accounts = \App\Models\Account::orderBy('code')->get();
-        return \Inertia\Inertia::render('Financial/Accounts', [
-            'accounts' => $accounts
-        ]);
+        try {
+            $accounts = \App\Models\Account::orderBy('code')->get();
+            return \Inertia\Inertia::render('Financial/Accounts', [
+                'accounts' => $accounts
+            ]);
+        } catch (\Throwable $e) {
+            return \Inertia\Inertia::render('Financial/Accounts', [
+                'accounts' => [],
+                'flash' => ['error' => 'Account schema sync required.']
+            ]);
+        }
     }
 
     public function ledger(Request $request)
