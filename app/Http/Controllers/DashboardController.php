@@ -31,134 +31,127 @@ class DashboardController extends Controller
         AlertService $alertService
     ) {
         $storeId = auth()->user()->store_id ?? 1;
+        $cacheKey = "dashboard_metrics_store_{$storeId}";
 
-        // Initialize defaults
-        $totalProducts = 0;
-        $totalCustomers = 0;
-        $todaySales = 0;
-        $thisMonthSales = 0;
-        $pendingAlerts = [];
-        $backupCount = 0;
-        $salesHistory = [];
-        $topProducts = [];
-        $healthScore = null;
-        $riskScore = null;
-        $recommendations = [];
-        $cashflowProjections = [];
-        $aiInsights = [];
-        $stockData = null;
-        $pricingData = [];
-        $alerts = [];
-        $employeeRisks = [];
+        // Use caching to speed up cloud performance
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(10), function() use (
+            $storeId, 
+            $replenishmentService, 
+            $cashflowService, 
+            $stockService, 
+            $competitorService
+        ) {
+            // Initialize defaults
+            $totalProducts = 0;
+            $totalCustomers = 0;
+            $todaySales = 0;
+            $thisMonthSales = 0;
+            $pendingAlerts = [];
+            $backupCount = 0;
+            $salesHistory = [];
+            $topProducts = [];
+            $recommendations = [];
+            $cashflowProjections = [];
+            $stockData = null;
+            $pricingData = [];
+            $alerts = [];
 
-        // 1. Basic Metrics (Database)
-        try {
-            $totalProducts = Product::where('store_id', $storeId)->count();
-            $totalCustomers = Customer::where('store_id', $storeId)->count();
-            
-            $todaySales = Transaction::where('store_id', $storeId)
-                ->whereDate('created_at', now()->today())
-                ->sum('grand_total');
-
-            $thisMonthSales = Transaction::where('store_id', $storeId)
-                ->whereMonth('created_at', now()->month)
-                ->sum('grand_total');
-
-            $pendingAlerts = FraudAlert::where('resolved_at', null)->latest()->take(5)->get();
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Dashboard Basic Metrics Error: " . $e->getMessage());
-        }
-
-        // 2. System Health (Filesystem - High Risk on Vercel)
-        try {
-            $backupCount = count(Storage::files('backups'));
-        } catch (\Throwable $e) {
-            // Likely directory missing on ephemeral storage, ignore
-        }
-        
-        // 3. Charts & Analytics
-        try {
-            $salesHistory = Transaction::where('store_id', $storeId)
-                ->where('created_at', '>=', now()->subDays(30))
-                ->select(DB::raw("DATE(created_at) as date"), DB::raw("SUM(grand_total) as total"))
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get()
-                ->mapWithKeys(fn($item) => [$item->date => (float)$item->total])
-                ->toArray();
-
-            $topProducts = DB::table('transaction_items')
-                ->join('products', 'transaction_items.product_id', '=', 'products.id')
-                ->select('products.name', DB::raw('SUM(transaction_items.quantity) as total_sold'), DB::raw('SUM(transaction_items.total) as revenue'))
-                ->where('products.store_id', $storeId)
-                ->groupBy('products.id', 'products.name')
-                ->orderBy('revenue', 'desc')
-                ->take(5)
-                ->get();
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Dashboard Analytics Error: " . $e->getMessage());
-        }
-
-        // 4. Advanced Services
-        try {
-            $healthScore = BusinessHealthScore::where('store_id', $storeId)->latest('calculated_at')->first();
-            $riskScore = ProfitRiskScore::where('store_id', $storeId)->whereNull('user_id')->latest('calculated_at')->first();
-            $recommendations = $replenishmentService->getRecommendations($storeId);
-            $cashflowProjections = $cashflowService->generate($storeId);
-            
-            // AI Insights
+            // 1. Basic Metrics
             try {
-                $insightService->generateInsights($storeId);
+                $totalProducts = Product::where('store_id', $storeId)->count();
+                $totalCustomers = Customer::where('store_id', $storeId)->count();
+                
+                $todaySales = Transaction::where('store_id', $storeId)
+                    ->whereDate('created_at', now()->today())
+                    ->sum('grand_total');
+
+                $thisMonthSales = Transaction::where('store_id', $storeId)
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('grand_total');
+
+                $pendingAlerts = FraudAlert::where('resolved_at', null)->latest()->take(5)->get();
             } catch (\Throwable $e) {
-                // Ignore insight generation errors
+                \Illuminate\Support\Facades\Log::error("Dashboard Basic Metrics Error: " . $e->getMessage());
             }
-            $aiInsights = \App\Models\AIInsight::where('store_id', $storeId)
-                ->where('status', 'pending')
-                ->latest()
-                ->get();
-    
-            // Stock Intelligence
-            $stockData = $stockService->getStockMetrics($storeId);
-    
-            // Competitor Intelligence
-            $pricingData = $competitorService->getPricingAnalysis($storeId);
-    
-            // System Alerts
-            $alerts = \App\Models\SystemAlert::where('store_id', $storeId)
-                ->latest()
-                ->take(10)
-                ->get();
+
+            // 2. System Health
+            try {
+                $backupCount = count(Storage::files('backups'));
+            } catch (\Throwable $e) {}
             
-            if (auth()->user() && (auth()->user()->role === 'owner' || auth()->user()->role === 'admin')) {
-                $employeeRisks = \App\Models\EmployeeRiskScore::where('store_id', $storeId)
-                    ->with('user')
-                    ->latest('calculated_at')
+            // 3. Charts & Analytics
+            try {
+                $salesHistory = Transaction::where('store_id', $storeId)
+                    ->where('created_at', '>=', now()->subDays(30))
+                    ->select(DB::raw("DATE(created_at) as date"), DB::raw("SUM(grand_total) as total"))
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get()
+                    ->mapWithKeys(fn($item) => [$item->date => (float)$item->total])
+                    ->toArray();
+
+                $topProducts = DB::table('transaction_items')
+                    ->join('products', 'transaction_items.product_id', '=', 'products.id')
+                    ->select('products.name', DB::raw('SUM(transaction_items.quantity) as total_sold'), DB::raw('SUM(transaction_items.total) as revenue'))
+                    ->where('products.store_id', $storeId)
+                    ->groupBy('products.id', 'products.name')
+                    ->orderBy('revenue', 'desc')
                     ->take(5)
                     ->get();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Dashboard Analytics Error: " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Dashboard Services Error: " . $e->getMessage());
+
+            // 4. Advanced Services (Fetch existing data instead of regenerating for speed)
+            try {
+                $recommendations = $replenishmentService->getRecommendations($storeId);
+                $cashflowProjections = \App\Models\CashflowProjection::where('store_id', $storeId)
+                    ->where('projection_date', '>=', now()->toDateString())
+                    ->orderBy('projection_date')
+                    ->take(30)
+                    ->get();
+
+                $stockData = $stockService->getStockMetrics($storeId);
+                $pricingData = $competitorService->getPricingAnalysis($storeId);
+
+                $alerts = \App\Models\SystemAlert::where('store_id', $storeId)
+                    ->latest()
+                    ->take(10)
+                    ->get();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Dashboard Services Error: " . $e->getMessage());
+            }
+
+            return compact(
+                'totalProducts', 'totalCustomers', 'todaySales', 'thisMonthSales', 
+                'pendingAlerts', 'backupCount', 'salesHistory', 'topProducts', 
+                'recommendations', 'cashflowProjections', 'stockData', 'pricingData', 'alerts'
+            );
+        });
+
+        // Data that shouldn't be cached long-term or needs fresh lookup
+        $healthScore = BusinessHealthScore::where('store_id', $storeId)->latest('calculated_at')->first();
+        $riskScore = ProfitRiskScore::where('store_id', $storeId)->whereNull('user_id')->latest('calculated_at')->first();
+        $aiInsights = \App\Models\AIInsight::where('store_id', $storeId)
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        $employeeRisks = [];
+        if (auth()->user() && (auth()->user()->role === 'owner' || auth()->user()->role === 'admin')) {
+            $employeeRisks = \App\Models\EmployeeRiskScore::where('store_id', $storeId)
+                ->with('user')
+                ->latest('calculated_at')
+                ->take(5)
+                ->get();
         }
 
-        return \Inertia\Inertia::render('Dashboard', [
-            'totalProducts' => (int) $totalProducts, 
-            'totalCustomers' => (int) $totalCustomers, 
-            'todaySales' => (float) $todaySales, 
-            'thisMonthSales' => (float) $thisMonthSales, 
-            'pendingAlerts' => $pendingAlerts,
-            'backupCount' => (int) $backupCount,
-            'salesHistory' => $salesHistory,
-            'topProducts' => $topProducts,
+        return \Inertia\Inertia::render('Dashboard', array_merge($data, [
             'healthScore' => $healthScore,
             'riskScore' => $riskScore,
-            'recommendations' => $recommendations,
-            'cashflowProjections' => $cashflowProjections,
             'employeeRisks' => $employeeRisks,
             'aiInsights' => $aiInsights,
-            'stockData' => $stockData,
-            'pricingData' => $pricingData,
-            'alerts' => $alerts
-        ]);
+        ]));
     }
 
     public function getLiveMetrics()
