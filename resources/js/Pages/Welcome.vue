@@ -25,7 +25,13 @@ import {
     PieChart,
     Globe,
     Bot,
-    Wallet
+    Wallet,
+    Ticket,
+    Layers,
+    Shield,
+    FileSpreadsheet,
+    ArrowDownToLine,
+    ShieldCheck
 } from 'lucide-vue-next';
 
 defineProps({
@@ -112,9 +118,9 @@ const demoProducts = [
                             Coba Gratis 14 Hari
                             <ArrowRight class="w-4 h-4" />
                         </Link>
-                        <a href="#demo" class="w-full sm:w-auto px-8 py-3.5 rounded-xl border border-gray-300 dark:border-zinc-700 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 text-zinc-700 dark:text-zinc-300 font-bold text-base bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center justify-center gap-2 group">
-                            <PlayCircle class="w-4 h-4 group-hover:text-red-600 transition-colors" />
-                            Lihat Demo POS
+                        <a href="#ecosystem" class="w-full sm:w-auto px-8 py-3.5 rounded-xl border border-gray-300 dark:border-zinc-700 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 text-zinc-700 dark:text-zinc-300 font-bold text-base bg-white dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center justify-center gap-2 group">
+                            <ShieldCheck class="w-4 h-4 group-hover:text-red-600 transition-colors" />
+                            Eco-System Enterprise
                         </a>
                     </div>
 
@@ -356,95 +362,80 @@ const demoProducts = [
                 </div>
 
                 <!-- Comprehensive All Features Grid -->
-                <div class="mt-40">
+                <div id="ecosystem" class="mt-40">
                     <div class="text-center max-w-2xl mx-auto mb-16">
-                        <h2 class="text-3xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">Ekosistem POS Terlengkap</h2>
-                        <p class="text-zinc-500 dark:text-zinc-400">Segala instrumen yang Anda butuhkan untuk menguasai pasar retail.</p>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider border border-blue-100 dark:border-blue-900/30 mb-4">
+                            Enterprise Ecosystem
+                        </div>
+                        <h2 class="text-3xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">Orlansoft-Inspired Architecture</h2>
+                        <p class="text-zinc-500 dark:text-zinc-400">Segala instrumen yang Anda butuhkan untuk menguasai pasar retail dengan standar perusahaan global.</p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <!-- Operational -->
+                        <!-- Operational & Logistics -->
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Zap :size="20" />
+                                <Truck :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Auto-PR (Replenishment)</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Sistem cerdas yang otomatis membuat Purchase Request saat stok menipis.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Order Fulfillment (OM)</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Kelola siklus hidup order dari Sales Order (SO) hingga pengiriman dan faktur final secara otomatis.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <CheckCircle :size="20" />
+                                <ArrowDownToLine :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">12-Digit Checksum</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Penomoran otomatis dengan validasi Checksum untuk akurasi inventori 100%.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Auto-PR & Replenishment</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Alokasi stok otomatis dari gudang pusat (DC) ke cabang berdasarkan prediksi kebutuhan stok minimum.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Truck :size="20" />
+                                <Ticket :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Logika Konsinyasi</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Manajemen barang titipan dengan perhitungan bagi hasil otomatis per transaksi.</p>
-                        </div>
-
-                        <!-- Inventory -->
-                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
-                            <div class="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <ClipboardCheck :size="20" />
-                            </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Audit Stok (Opname)</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Lakukan pencocokan stok fisik vs sistem dengan cepat tanpa menghentikan penjualan.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Voucher & Loyalty Exchange</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Tukarkan poin loyalitas pelanggan dengan voucher belanja atau merchandise fisik secara real-time.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Truck :size="20" />
+                                <Box :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Manajemen Supplier</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Kelola database supplier, harga beli termurah, dan buat Purchase Order otomatis.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">8-Dimension Item Logic</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Atur produk dengan atribut kompleks (Warna, Ukuran, Material) dalam satu master data terpadu.</p>
                         </div>
 
-                        <!-- Financial -->
+                        <!-- Financial & Strategic -->
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <BarChart3 :size="20" />
+                                <FileSpreadsheet :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Konsolidasi Laporan</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Gabungkan laporan keuangan dari banyak cabang dengan eliminasi otomatis.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">HQ Consolidation</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Laporan keuangan grup dengan eliminasi transaksi antar-cabang untuk melihat laba bersih grup yang valid.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
-                            <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-zinc-800 dark:text-gray-300 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Database :size="20" />
+                            <div class="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <Shield :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Cloud Backup</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Data transaksi Anda aman tersimpan di cloud dengan cadangan harian otomatis.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Margin Safeguard</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Kontrol harga jual multi-tier dengan validasi margin profit minimum secara otomatis.</p>
                         </div>
 
-                        <!-- Intelligence -->
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Bot :size="20" />
+                                <Layers :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">AI Voice Assistant</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Tanyakan stok atau laporan lewat suara. Asisten AI siap membantu navigasi Anda.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Cycle Payments</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Konsolidasi hutang supplier dan pembayaran terjadwal berdasarkan periode penagihan perusahaan.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
-                            <div class="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Calendar :size="20" />
+                            <div class="w-10 h-10 rounded-xl bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <ShieldCheck :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Forecast Penjualan</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Sistem memprediksi tren penjualan bulan depan berdasarkan data historis toko.</p>
-                        </div>
-
-                        <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
-                            <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/20 text-teal-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Globe :size="20" />
-                            </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Remote Monitoring</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Pantau perkembangan toko dari mana saja, kapan saja, langsung melalui smartphone Anda.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Granular ACL Security</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Pembatasan akses tindakan sensitif di kasir (Void, Diskon Manual) dengan proteksi level manajer.</p>
                         </div>
                     </div>
                 </div>
