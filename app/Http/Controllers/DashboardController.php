@@ -14,6 +14,7 @@ use App\Services\EmployeeRiskService;
 use App\Services\InsightEngineService;
 use App\Services\StockIntelligenceService;
 use App\Services\CompetitorPriceService;
+use App\Services\AlertService;
 use App\Services\PricingService;
 use App\Services\ConsolidationService;
 use Illuminate\Http\Request;
