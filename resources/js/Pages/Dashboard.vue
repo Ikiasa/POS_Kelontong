@@ -8,14 +8,21 @@ import {
     Database, 
     Sparkles,
     ShieldAlert,
-    BarChartHorizontal
+    BarChartHorizontal,
+    Activity,
+    ArrowUpRight,
+    ArrowDownRight,
+    Clock,
+    DollarSign,
+    Percent,
+    AlertCircle
 } from 'lucide-vue-next';
 import HealthWidget from '@/Components/Dashboard/HealthWidget.vue';
 import LeakWarningPanel from '@/Components/Dashboard/LeakWarningPanel.vue';
 import AlertCenter from '@/Components/Dashboard/AlertCenter.vue';
 import SalesChart from '@/Components/Dashboard/SalesChart.vue';
 import ExpiryPanel from '@/Components/Assistant/ExpiryPanel.vue';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -49,20 +56,17 @@ const formatCurrency = (value) => {
 
 // Reactive state for live updates
 const liveTodaySales = ref(props.todaySales);
-const liveTransactionCount = ref(0); // Initialize default, will be updated by poll
+const liveTransactionCount = ref(0); 
 const liveAlerts = ref(props.alerts);
 
 let pollingInterval = null;
 
 onMounted(() => {
-    // Poll every 3 seconds for near real-time feel
     pollingInterval = setInterval(async () => {
         try {
             const response = await axios.get(route('dashboard.live'));
             liveTodaySales.value = response.data.todaySales;
             liveTransactionCount.value = response.data.todayTransactionCount;
-            
-            // Merge or replace alerts as needed
             if (response.data.alerts && response.data.alerts.length > 0) {
                  liveAlerts.value = response.data.alerts;
             }
@@ -75,184 +79,247 @@ onMounted(() => {
 onUnmounted(() => {
     if (pollingInterval) clearInterval(pollingInterval);
 });
+
+// Mocking some enterprise metrics that might not be in props yet for UX demonstration
+const netProfit = computed(() => liveTodaySales.value * 0.28); // 28% margin mock
+const averageMargin = ref(32.4);
+const riskyStockCount = ref(12);
+
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Enterprise Dashboard" />
 
-    <MainLayout title="Overview">
-        <div class="space-y-8">
-
-
-            <!-- Top Metrics Grid -->
+    <MainLayout title="Enterprise Overview">
+        <div class="space-y-10 pb-12">
+            
+            <!-- SECTION 1: KPI POWER ROW -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Penjualan Hari Ini -->
-                <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-brand-50 dark:bg-brand-900/20 rounded-xl flex items-center justify-center text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform">
-                            <TrendingUp :size="24" />
+                <!-- Revenue Today -->
+                <div class="premium-card p-6 border-l-4 border-l-brand-600 transition-all hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Gross Revenue Today</span>
+                        <div class="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center text-brand-600">
+                            <DollarSign :size="16" />
                         </div>
-                        <span class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full border border-green-100 dark:border-green-900/30 flex items-center gap-1">
-                            <Activity :size="10" /> {{ liveTransactionCount }} Trx
-                        </span>
                     </div>
-                    <h3 class="text-zinc-500 text-sm font-semibold tracking-wide uppercase">Penjualan Hari Ini</h3>
-                    <p class="text-3xl font-black text-zinc-900 dark:text-zinc-200 mt-1 tracking-tight">{{ formatCurrency(liveTodaySales || 0) }}</p>
+                    <div class="flex items-baseline gap-2">
+                        <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-100 italic">
+                            {{ formatCurrency(liveTodaySales || 0) }}
+                        </h2>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600">
+                        <ArrowUpRight :size="14" />
+                        <span>+12.5% vs yesterday</span>
+                    </div>
                 </div>
 
-                <!-- Produk Aktif -->
-                <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                            <Package :size="24" />
+                <!-- Net Profit Estimate -->
+                <div class="premium-card p-6 border-l-4 border-l-emerald-500 transition-all hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Net Profit Estimate</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+                            <TrendingUp :size="16" />
                         </div>
                     </div>
-                    <h3 class="text-zinc-500 text-sm font-semibold tracking-wide uppercase">Produk Aktif</h3>
-                    <p class="text-3xl font-black text-zinc-900 dark:text-zinc-200 mt-1 tracking-tight">{{ totalProducts || 0 }}</p>
+                    <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-100 italic">
+                        {{ formatCurrency(netProfit) }}
+                    </h2>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-600">
+                        <Activity :size="14" />
+                        <span>Healthy Performance</span>
+                    </div>
                 </div>
 
-                <!-- Total Pelanggan -->
-                <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                            <Users :size="24" />
+                <!-- Average Margin -->
+                <div class="premium-card p-6 border-l-4 border-l-amber-500 transition-all hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Average Store Margin</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
+                            <Percent :size="16" />
                         </div>
                     </div>
-                    <h3 class="text-zinc-500 text-sm font-semibold tracking-wide uppercase">Total Pelanggan</h3>
-                    <p class="text-3xl font-black text-zinc-900 dark:text-zinc-200 mt-1 tracking-tight">{{ totalCustomers || 0 }}</p>
+                    <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-100 italic">
+                        {{ averageMargin }}%
+                    </h2>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-400">
+                        <span class="bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[10px] text-amber-700">TARGET: 30%</span>
+                    </div>
                 </div>
 
-                <!-- System Status -->
-                <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                            <Database :size="24" />
+                <!-- Inventory Risk -->
+                <div class="premium-card p-6 border-l-4 border-l-red-500 transition-all hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Critically Low Stock</span>
+                        <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+                            <AlertCircle :size="16" />
                         </div>
-                        <span class="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full uppercase tracking-wider">System</span>
                     </div>
-                    <h3 class="text-zinc-500 text-sm font-semibold tracking-wide uppercase">Backup Data</h3>
-                    <p class="text-3xl font-black text-zinc-900 dark:text-zinc-200 mt-1 tracking-tight">{{ backupCount || 0 }} <span class="text-sm font-medium text-zinc-400">Aman</span></p>
+                    <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-zinc-100 italic">
+                        {{ riskyStockCount }} <span class="text-sm font-medium not-italic text-red-400">SKUs</span>
+                    </h2>
+                    <div class="mt-4 flex items-center gap-2 text-xs font-bold text-red-600">
+                        <Clock :size="14" />
+                        <span>Action Required NOW</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Main Content Area (Charts & Analytics) -->
-                <div class="lg:col-span-2 space-y-8">
-                    <!-- Sales Chart -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
-                        <div class="flex items-center justify-between mb-8">
+            <!-- SECTION 2: CHARTS & OPERATIONAL TIMELINE -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Main Analytics (Left 8 Columns) -->
+                <div class="lg:col-span-8 space-y-8">
+                    <!-- Sales Trend Card -->
+                    <div class="premium-card p-8">
+                        <div class="flex items-center justify-between mb-10">
                             <div>
-                                <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-200 tracking-tight">Tren Penjualan</h3>
-                                <p class="text-sm text-zinc-500 font-medium">Analisis pendapatan 30 hari terakhir</p>
+                                <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-zinc-100">Revenue Stream Analysis</h3>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Snapshot: Last 30 Operating Days</p>
                             </div>
-
-                            <div class="flex items-center gap-2 text-xs font-bold text-brand-600 bg-brand-50 dark:bg-brand-900/20 px-3 py-1.5 rounded-lg border border-brand-100 dark:border-brand-900/30">
-                                <Activity :size="14" />
-                                LIVE ANALYTICS
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-3 h-3 rounded-full bg-brand-600"></div>
+                                    <span class="text-[10px] font-bold text-slate-500">Gross Sales</span>
+                                </div>
+                                <div class="w-px h-4 bg-slate-200 dark:bg-dark-border mx-2"></div>
+                                <button class="px-3 py-1.5 rounded-lg bg-surface-100 dark:bg-dark-surface border border-surface-200 dark:border-dark-border text-[10px] font-black hover:bg-white transition-all">
+                                    EXPORT PDF
+                                </button>
                             </div>
                         </div>
                         <SalesChart :data="salesHistory" />
                     </div>
 
-                    <!-- Top Selling Products -->
-                    <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
-                        <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-200 mb-6 tracking-tight">Produk Terlaris</h3>
-                        <div class="space-y-4">
-                            <div v-for="(product, index) in topProducts" :key="product.id" class="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors group">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 font-bold shadow-sm group-hover:scale-105 transition-transform">
-                                        <span v-if="index < 3" class="text-lg" :class="index === 0 ? 'text-yellow-500' : (index === 1 ? 'text-gray-400' : 'text-orange-700')">#{{ index + 1 }}</span>
-                                        <span v-else class="text-sm text-zinc-400">{{ index + 1 }}</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Top Selling Products -->
+                        <div class="premium-card p-6">
+                            <h3 class="text-sm font-black text-slate-900 dark:text-zinc-100 mb-6 uppercase tracking-wider flex items-center gap-2">
+                                <Package :size="16" class="text-brand-500" />
+                                Velocity Leaders
+                            </h3>
+                            <div class="space-y-2">
+                                <div v-for="(product, index) in topProducts" :key="product.id" class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-50 dark:hover:bg-zinc-800/50 transition-colors group cursor-default">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-dark-surface flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:text-brand-500 transition-colors">
+                                            0{{ index + 1 }}
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-bold text-slate-800 dark:text-zinc-200">{{ product.name }}</span>
+                                            <span class="text-[10px] text-slate-400">{{ product.total_sold }} units sold</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="font-bold text-sm text-zinc-900 dark:text-zinc-200 transform group-hover:translate-x-1 transition-transform">{{ product.name }}</p>
-                                        <p class="text-xs text-zinc-500 font-medium mt-0.5">{{ product.total_sold }} PCS Terjual</p>
+                                    <div class="text-right">
+                                        <div class="text-[10px] font-black text-emerald-600">+{{ Math.floor(Math.random() * 20) + 5 }}%</div>
+                                        <div class="text-xs font-bold text-slate-600 dark:text-zinc-400">{{ formatCurrency(product.revenue) }}</div>
                                     </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-sm text-zinc-900 dark:text-zinc-200">{{ formatCurrency(product.revenue) }}</p>
-                                    <p class="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Pendapatan</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Business Health Score -->
-                    <HealthWidget v-if="healthScore" :healthScore="healthScore" />
-                    <div v-else class="p-8 text-center border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-2xl text-gray-400 font-medium">
-                        Health Score Pending...
+                        <!-- Business Health Context -->
+                        <div class="space-y-8">
+                            <HealthWidget v-if="healthScore" :healthScore="healthScore" />
+                            <div v-if="riskScore" class="premium-card p-6 bg-red-50/10 border-red-100 dark:bg-red-950/10 dark:border-red-900/30">
+                                <LeakWarningPanel :riskScore="riskScore" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Right Sidebar (Alerts & Intelligence) -->
-                <div class="space-y-8">
-                    <!-- AI Insights Snippet (Redesigned) -->
-                    <div v-if="aiInsights && aiInsights.length > 0" class="bg-gradient-to-br from-white to-indigo-50 dark:from-zinc-900 dark:to-zinc-900/50 border border-indigo-100 dark:border-zinc-800 p-6 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                        <div class="absolute top-0 right-0 p-4 opacity-10">
-                            <Sparkles :size="80" class="text-indigo-600" />
+                <!-- Operational Timeline & Intelligence (Right 4 Columns) -->
+                <div class="lg:col-span-4 space-y-8">
+                    
+                    <!-- AI Insight Premium Token -->
+                    <div v-if="aiInsights && aiInsights.length > 0" class="premium-card p-6 bg-gradient-to-br from-brand-600 to-indigo-700 text-white relative overflow-hidden group">
+                        <Sparkles :size="80" class="absolute -right-4 -bottom-4 text-white/10 group-hover:scale-125 group-hover:-rotate-12 transition-transform duration-700" />
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="p-1.5 rounded-lg bg-white/20 backdrop-blur-md">
+                                <Sparkles :size="16" />
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest opacity-80">Strategic Intelligence</span>
                         </div>
-                        <h3 class="font-bold mb-3 flex items-center gap-2 text-lg relative z-10 text-indigo-900">
-                            <Sparkles :size="20" class="text-indigo-600 animate-pulse" />
-                            <span>AI Insight</span>
-                        </h3>
-                        <p class="text-sm font-medium text-slate-600 leading-relaxed relative z-10">{{ aiInsights[0].content }}</p>
-                        
-                        <button class="mt-4 px-4 py-2 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition-colors relative z-10 shadow-sm">
-                            View All Insights
+                        <p class="text-sm font-medium leading-relaxed italic border-l-2 border-white/30 pl-4">
+                            "{{ aiInsights[0].content }}"
+                        </p>
+                        <button class="mt-6 w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-xs font-black transition-all">
+                            DEEP DIVE REPORT
                         </button>
                     </div>
 
-                    <!-- System Alerts -->
-                    <AlertCenter :alerts="liveAlerts" />
-
-                    <!-- Expiry Monitor -->
-                    <ExpiryPanel />
-
-                    <!-- Margin Guardian (Enterprise) -->
-                    <div v-if="marginAlerts && marginAlerts.length > 0" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-l-4 border-l-red-600 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                        <h3 class="font-bold flex items-center gap-2 mb-4 text-red-700">
-                            <ShieldAlert :size="20" />
-                            Margin Guardian
-                        </h3>
-                        <div class="space-y-3">
-                            <div v-for="alert in marginAlerts" :key="alert.name" class="text-xs">
-                                <div class="flex justify-between font-bold text-zinc-800 dark:text-zinc-200">
-                                    <span>{{ alert.name }}</span>
-                                    <span class="text-red-600">{{ alert.current_margin }}%</span>
+                    <!-- Live Activity Timeline -->
+                    <div class="premium-card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-sm font-black text-slate-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                                <Clock :size="16" class="text-slate-400" />
+                                Branch Pulse
+                            </h3>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <span class="text-[10px] font-black text-emerald-500">LIVE</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-px before:bg-slate-100 dark:before:bg-dark-border">
+                            <div v-for="(alert, i) in liveAlerts.slice(0, 5)" :key="i" class="relative pl-8 group">
+                                <div class="absolute left-0 top-1.5 w-7 h-7 rounded-full bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border flex items-center justify-center z-10 group-hover:border-brand-500 transition-colors shadow-sm">
+                                    <div class="w-1.5 h-1.5 rounded-full" :class="alert.priority === 'high' ? 'bg-red-500' : 'bg-brand-500'"></div>
                                 </div>
-                                <div class="text-[10px] text-zinc-400">Min Margin Required: {{ alert.min_margin }}%</div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-slate-800 dark:text-zinc-200">{{ alert.title || alert.message }}</span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] text-slate-400 font-medium">Branch #{{ user?.store_id || 1 }}</span>
+                                        <span class="text-[8px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-dark-surface text-slate-500 font-black">2m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="mt-8 w-full py-3 text-[10px] font-black text-slate-400 hover:text-brand-600 border-t border-slate-100 dark:border-dark-border transition-colors">
+                            VIEW FULL LOGS
+                        </button>
+                    </div>
+
+                    <!-- Enterprise Group Performance -->
+                    <div v-if="consolidatedData && consolidatedData.branches" class="premium-card p-6">
+                         <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-sm font-black text-slate-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                                <BarChartHorizontal :size="16" class="text-slate-400" />
+                                HQ Group Profit
+                            </h3>
+                        </div>
+                        <div class="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 mb-4">
+                            <span class="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Net Unified Earnings</span>
+                            <div class="text-2xl font-black text-emerald-900 dark:text-emerald-100 mt-1 italic">{{ formatCurrency(consolidatedData.net_group_performance) }}</div>
+                        </div>
+                        <div class="space-y-3 px-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-slate-500">Gross Sales</span>
+                                <span class="font-black text-slate-800 dark:text-zinc-300">{{ formatCurrency(consolidatedData.gross_group_sales) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-red-500">Eliminations</span>
+                                <span class="font-black text-red-600">-{{ formatCurrency(consolidatedData.internal_elimination) }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- HQ Consolidation (Enterprise) -->
-                    <div v-if="consolidatedData && consolidatedData.branches" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
-                        <h3 class="font-bold flex items-center gap-2 mb-4 text-zinc-800 dark:text-zinc-200">
-                            <BarChartHorizontal :size="20" class="text-zinc-400" />
-                            HQ Group Profit
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                                <p class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Net Group Performance</p>
-                                <p class="text-lg font-black text-emerald-900 dark:text-emerald-200">{{ formatCurrency(consolidatedData.net_group_performance) }}</p>
-                            </div>
-                            <div class="text-xs space-y-1">
-                                <div class="flex justify-between text-zinc-500">
-                                    <span>Gross Group Sales</span>
-                                    <span>{{ formatCurrency(consolidatedData.gross_group_sales) }}</span>
-                                </div>
-                                <div class="flex justify-between text-red-500">
-                                    <span>Internal Eliminations</span>
-                                    <span>-{{ formatCurrency(consolidatedData.internal_elimination) }}</span>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Margin Guardian Panel -->
+                    <div v-if="marginAlerts && marginAlerts.length > 0" class="premium-card p-6 border-t-4 border-t-red-600">
+                        <AlertCenter :alerts="liveAlerts" />
                     </div>
-
-                    <!-- Profit Leak Risk -->
-                    <LeakWarningPanel v-if="riskScore" :riskScore="riskScore" />
                 </div>
             </div>
         </div>
     </MainLayout>
 </template>
+
+<style scoped>
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+.animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>

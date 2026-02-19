@@ -44,6 +44,14 @@ class SaleService
                 }
             }
 
+            // 0a. Payload Validation
+            if (!isset($data['payment']) || !isset($data['payment']['method'])) {
+                throw new Exception("Missing payment data in request.");
+            }
+            if (!isset($data['totals']) || !isset($data['totals']['grandTotal'])) {
+                throw new Exception("Missing transaction totals.");
+            }
+
             // 1. Generate Invoice Number
             $lastInvoice = Transaction::where('store_id', $storeId)
                 ->whereDate('created_at', now())

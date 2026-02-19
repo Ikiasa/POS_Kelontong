@@ -23,8 +23,10 @@ createInertiaApp({
 
         app.mount(el);
 
-        // Inject Speed Insights
-        injectSpeedInsights();
+        // Inject Speed Insights only in production
+        if (import.meta.env.PROD) {
+            injectSpeedInsights();
+        }
 
         return app;
     },

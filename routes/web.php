@@ -126,15 +126,21 @@ Route::middleware('guest')->group(function () {
     })->name('login');
 
     Route::post('login', function (\Illuminate\Http\Request $request) {
+        \Illuminate\Support\Facades\Log::info('Login attempt for: ' . $request->email);
+        
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
         if (Illuminate\Support\Facades\Auth::attempt($credentials)) {
+            \Illuminate\Support\Facades\Log::info('Auth::attempt succeeded for: ' . $request->email);
             $request->session()->regenerate();
+            \Illuminate\Support\Facades\Log::info('Session regenerated. User ID: ' . auth()->id());
             return redirect()->intended('dashboard');
         }
+
+        \Illuminate\Support\Facades\Log::warning('Auth::attempt FAILED for: ' . $request->email);
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',

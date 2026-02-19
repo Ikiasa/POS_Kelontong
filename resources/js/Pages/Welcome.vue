@@ -144,32 +144,32 @@ const demoProducts = [
                 <div class="relative z-10 lg:perspective-[2000px] group select-none">
                     
                     <!-- Floating Cards Refined -->
-                    <div class="absolute -right-8 top-16 w-72 p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-2xl shadow-zinc-200/50 dark:shadow-zinc-900/50 border border-gray-100 dark:border-zinc-700 md:animate-float-slow z-30 hidden lg:block transform rotate-1">
+                    <div class="absolute -right-8 top-16 w-72 p-5 bg-[#1a1a1a] rounded-2xl shadow-2xl border border-zinc-800 md:animate-float-slow z-30 hidden lg:block transform rotate-1">
                         <div class="flex items-start gap-3">
-                            <div class="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400 shrink-0">
-                                <AlertTriangle :size="18" />
+                            <div class="p-2.5 bg-orange-600/20 rounded-xl text-orange-500 shrink-0">
+                                <AlertTriangle :size="20" />
                             </div>
                             <div>
-                                <h4 class="font-bold text-sm text-zinc-800 dark:text-white">Stok Menipis</h4>
-                                <p class="text-xs text-zinc-500 mt-0.5 leading-snug">
-                                    <span class="font-bold text-zinc-700 dark:text-zinc-300">Minyak Goreng 2L</span> tersisa <span class="text-red-600 font-bold">3 pcs</span>. Segera reorder!
+                                <h4 class="font-black text-sm text-white">Stok Menipis</h4>
+                                <p class="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+                                    <span class="font-bold text-zinc-200">Minyak Goreng 2L</span> tersisa <span class="text-red-500 font-black">3 pcs</span>. Segera reorder!
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="absolute -left-10 bottom-24 w-64 p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-2xl shadow-zinc-200/50 dark:shadow-zinc-900/50 border border-gray-100 dark:border-zinc-700 md:animate-float-delayed z-30 hidden lg:block transform -rotate-1">
-                        <div class="flex items-start gap-3">
-                            <div class="p-2 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400 shrink-0">
-                                <BarChart3 :size="18" />
+                    <div class="absolute -left-12 bottom-20 w-72 p-5 bg-[#1a1a1a] rounded-2xl shadow-2xl border border-zinc-800 md:animate-float-delayed z-30 hidden lg:block transform -rotate-1">
+                        <div class="flex items-start gap-4">
+                            <div class="p-2.5 bg-red-600/20 rounded-xl text-red-500 shrink-0">
+                                <BarChart3 :size="20" />
                             </div>
-                            <div>
-                                <h4 class="font-bold text-sm text-zinc-800 dark:text-white">Business Health</h4>
-                                <div class="flex items-center gap-2 mt-1.5">
-                                    <div class="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden w-24">
-                                        <div class="h-full w-[82%] bg-green-500 rounded-full"></div>
+                            <div class="flex-1">
+                                <h4 class="font-black text-sm text-white">Business Health</h4>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                                        <div class="h-full w-[82%] bg-emerald-500 rounded-full"></div>
                                     </div>
-                                    <span class="text-xs font-bold text-green-600">82/100</span>
+                                    <span class="text-xs font-black text-emerald-500 tracking-tighter">82/100</span>
                                 </div>
                             </div>
                         </div>
@@ -198,11 +198,11 @@ const demoProducts = [
 
                             <div class="flex-1 flex overflow-hidden bg-gray-50 dark:bg-zinc-950">
                                 <!-- Sidebar (Functional) -->
-                                <div class="w-12 border-r border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col items-center py-3 gap-3 shrink-0">
-                                    <div class="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-md"><LayoutGrid :size="14" /></div>
-                                    <div class="p-1.5 text-zinc-400 hover:bg-gray-50 rounded-md"><ShoppingCart :size="14" /></div>
-                                    <div class="p-1.5 text-zinc-400 hover:bg-gray-50 rounded-md"><Box :size="14" /></div>
-                                    <div class="mt-auto p-1.5 text-zinc-400"><User :size="14" /></div>
+                                <div class="w-14 border-r border-white/5 bg-black/40 flex flex-col items-center py-4 gap-4 shrink-0">
+                                    <div class="p-2 bg-red-600/20 text-red-500 rounded-xl"><LayoutGrid :size="18" /></div>
+                                    <div class="p-2 text-zinc-600 hover:text-zinc-300 transition-colors"><ShoppingCart :size="18" /></div>
+                                    <div class="p-2 text-zinc-600 hover:text-zinc-300 transition-colors"><Box :size="18" /></div>
+                                    <div class="mt-auto p-2 text-zinc-600"><User :size="18" /></div>
                                 </div>
 
                                 <!-- Main POS Area -->
@@ -230,57 +230,54 @@ const demoProducts = [
                                 </div>
 
                                 <!-- Right Panel (Cart - Detailed) -->
-                                <div class="w-64 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-800 flex flex-col shrink-0 text-[10px]">
-                                    <div class="p-3 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-800/50">
+                                <div class="w-68 bg-[#121212] border-l border-white/5 flex flex-col shrink-0 text-[10px]">
+                                    <div class="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
                                         <div class="flex items-center gap-2">
                                             <ShoppingCart :size="12" class="text-zinc-500" />
-                                            <span class="font-bold text-zinc-700 dark:text-zinc-200">Keranjang Belanja</span>
+                                            <span class="font-black text-zinc-300 uppercase tracking-widest text-[9px]">Check-out Queue</span>
                                         </div>
-                                        <span class="bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 px-1.5 py-0.5 rounded font-bold">6 item</span>
+                                        <span class="bg-red-600/10 text-red-500 px-2 py-0.5 rounded-full font-black text-[8px]">ACTIVE</span>
                                     </div>
                                     
                                     <!-- Cart Items Table -->
                                     <div class="flex-1 overflow-hidden relative">
                                         <table class="w-full text-left border-collapse">
-                                            <thead class="bg-gray-50 dark:bg-zinc-950 text-zinc-400 font-medium border-b border-gray-100 dark:border-zinc-800">
+                                            <thead class="bg-black/20 text-zinc-500 font-black uppercase tracking-tighter border-b border-white/5">
                                                 <tr>
-                                                    <th class="py-1.5 px-2 font-medium w-[45%]">Produk</th>
-                                                    <th class="py-1.5 px-1 font-medium text-center">Qty</th>
-                                                    <th class="py-1.5 px-2 font-medium text-right">Total</th>
+                                                    <th class="py-2.5 px-3 w-[55%]">Item Details</th>
+                                                    <th class="py-2.5 px-1 text-center">Qty</th>
+                                                    <th class="py-2.5 px-3 text-right">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="(item, idx) in demoProducts" :key="idx" class="border-b border-gray-50 dark:border-zinc-800/50 text-zinc-700 dark:text-zinc-300">
-                                                    <td class="py-1.5 px-2">
-                                                        <div class="line-clamp-1 font-medium">{{ item.name }}</div>
-                                                        <div class="text-[8px] text-zinc-400">@{{ item.price }}</div>
+                                                <tr v-for="(item, idx) in demoProducts" :key="idx" class="border-b border-white/5 text-zinc-300 group">
+                                                    <td class="py-2 px-3">
+                                                        <div class="line-clamp-1 font-bold text-zinc-200 group-hover:text-white">{{ item.name }}</div>
+                                                        <div class="text-[8px] text-zinc-500 mt-0.5">@{{ item.price }}</div>
                                                     </td>
-                                                    <td class="py-1.5 px-1 text-center font-bold">{{ item.qty }}</td>
-                                                    <td class="py-1.5 px-2 text-right font-medium">{{ item.total }}</td>
+                                                    <td class="py-2 px-1 text-center font-black text-zinc-400">{{ item.qty }}</td>
+                                                    <td class="py-2 px-3 text-right font-black text-zinc-200">{{ item.total }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        
-                                        <!-- Fog at bottom of list -->
-                                        <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent pointer-events-none"></div>
                                     </div>
 
                                     <!-- Totals Section -->
-                                    <div class="p-3 bg-gray-50 dark:bg-zinc-950/50 border-t border-gray-100 dark:border-zinc-800 space-y-1.5">
-                                        <div class="flex justify-between text-zinc-500">
-                                            <span>Subtotal</span> <span class="font-medium">Rp 308.200</span>
+                                    <div class="p-4 bg-black/40 border-t border-white/10 space-y-2">
+                                        <div class="flex justify-between text-zinc-500 font-bold">
+                                            <span>Subtotal</span> <span class="text-zinc-300">Rp 308.200</span>
                                         </div>
-                                        <div class="flex justify-between text-zinc-500">
-                                            <span>Pajak (0%)</span> <span class="font-medium">-</span>
+                                        <div class="flex justify-between text-zinc-500 font-bold">
+                                            <span>Pajak (0%)</span> <span class="text-zinc-300">-</span>
                                         </div>
-                                        <div class="flex justify-between items-end pt-1 pb-2 border-b border-gray-200 dark:border-zinc-700 mb-1">
-                                            <span class="text-xs font-bold text-zinc-800 dark:text-white">Total</span>
-                                            <span class="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Rp 308.200</span>
+                                        <div class="flex justify-between items-end pt-2 pb-3 border-b border-white/10 mb-2">
+                                            <span class="text-xs font-black text-white italic uppercase tracking-tighter">TOTAL</span>
+                                            <span class="text-xl font-black text-white tracking-tighter">Rp 308.200</span>
                                         </div>
-                                        <div class="grid grid-cols-4 gap-1.5">
-                                            <div class="col-span-1 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded flex items-center justify-center text-zinc-400 font-bold text-[9px]">ESC</div>
-                                            <div class="col-span-3 bg-red-600 rounded flex items-center justify-center text-white text-[10px] font-bold gap-1 shadow-md shadow-red-600/20 py-2">
-                                                <CreditCard :size="10" /> BAYAR (F8)
+                                        <div class="grid grid-cols-4 gap-2">
+                                            <div class="col-span-1 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-zinc-500 font-black text-[9px] hover:bg-white/10 transition-colors">ESC</div>
+                                            <div class="col-span-3 bg-red-600 rounded-xl flex items-center justify-center text-white text-[10px] font-black gap-2 shadow-xl shadow-red-600/30 py-3 hover:bg-red-700 transition-all active:scale-95">
+                                                <CreditCard :size="12" /> BAYAR (F8)
                                             </div>
                                         </div>
                                     </div>
@@ -367,7 +364,7 @@ const demoProducts = [
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[11px] font-bold uppercase tracking-wider border border-blue-100 dark:border-blue-900/30 mb-4">
                             Enterprise Ecosystem
                         </div>
-                        <h2 class="text-3xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">Orlansoft-Inspired Architecture</h2>
+                        <h2 class="text-3xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">Kelontong-POS Architecture</h2>
                         <p class="text-zinc-500 dark:text-zinc-400">Segala instrumen yang Anda butuhkan untuk menguasai pasar retail dengan standar perusahaan global.</p>
                     </div>
 

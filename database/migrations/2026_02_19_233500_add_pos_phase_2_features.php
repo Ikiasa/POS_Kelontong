@@ -25,7 +25,7 @@ return new class extends Migration
 
         // 2. Pending Transactions (Recall/Park Sale)
         Schema::create('pending_transactions', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->foreignId('store_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('customer_id')->nullable()->constrained();

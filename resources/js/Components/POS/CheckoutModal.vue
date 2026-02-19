@@ -2,7 +2,20 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { usePosStore } from '@/Stores/posStore';
 import { printReceipt } from '@/Utils/thermalPrinter';
-import { X, Printer, CheckCircle, Loader2, Info, WifiOff } from 'lucide-vue-next';
+import { 
+    X, 
+    Printer, 
+    CheckCircle, 
+    Loader2, 
+    Info, 
+    WifiOff,
+    CreditCard,
+    DollarSign,
+    QrCode,
+    Plus,
+    Trash2,
+    Check
+} from 'lucide-vue-next';
 import axios from 'axios';
 import { offlineSync } from '@/Services/OfflineSyncService';
 
@@ -13,140 +26,91 @@ const props = defineProps({
 const emit = defineEmits(['close', 'completed']);
 
 const store = usePosStore();
-const cashReceived = ref('');
 const isProcessing = ref(false);
 const showSuccess = ref(false);
 const lastTransaction = ref(null);
 
 // Checkout State
-const paymentMethod = ref('cash'); // Primary toggle for UI
 const payments = ref([
-    { method: 'CASH', amount: store.total, reference: '' }
+    { method: 'CASH', amount: 0, reference: '' }
 ]);
 
-const vouchers = ref([]);
-const voucherCode = ref('');
-
-const addPayment = (method) => {
-    const remaining = store.total - payments.value.reduce((acc, p) => acc + p.amount, 0);
+const addPaymentLine = (method = 'CASH') => {
+    const remaining = store.total - totalPaid.value;
     if (remaining > 0) {
-        payments.value.push({ method: method, amount: remaining, reference: '' });
+        payments.value.push({ method, amount: remaining, reference: '' });
     }
 };
 
-const applyVoucher = async () => {
-    if (!voucherCode.value) return;
-    try {
-        const res = await axios.post(route('vouchers.validate'), { code: voucherCode.value });
-        if (res.data.valid) {
-            const v = res.data.voucher;
-            
-            // Avoid duplicates
-            if (vouchers.value.find(existing => existing.id === v.id)) {
-                alert('Voucher sudah dipakai');
-                return;
-            }
-
-            vouchers.value.push(v);
-            
-            // Add as payment method
-            payments.value.push({ 
-                method: 'VOUCHER', 
-                amount: Math.min(v.value, store.total - totalPaid.value), 
-                reference: v.code 
-            });
-            
-            voucherCode.value = '';
-        } else {
-            alert(res.data.message || 'Voucher tidak valid');
-        }
-    } catch (e) { alert('Gagal memvalidasi voucher'); }
+const removePaymentLine = (index) => {
+    if (payments.value.length > 1) {
+        payments.value.splice(index, 1);
+    } else {
+        payments.value[0].amount = 0;
+    }
 };
 
 const totalPaid = computed(() => {
-    return payments.value.reduce((acc, p) => acc + p.amount, 0);
+    return payments.value.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
 });
 
 const changeAmount = computed(() => {
-    const received = parseInt(cashReceived.value) || 0;
-    return Math.max(0, received - store.total);
+    return Math.max(0, totalPaid.value - store.total);
 });
 
 const canCheckout = computed(() => {
-    if (paymentMethod.value === 'cash') {
-       const received = parseInt(cashReceived.value) || 0;
-       return received >= store.total && store.cart.length > 0;
-    }
-    // For QRIS, button is disabled until paid status, but we handle that in template
-    return false;
+    return totalPaid.value >= store.total && store.cart.length > 0 && !isProcessing.value;
 });
 
-// Watch show to reset
-watch(() => props.show, (newVal) => {
-    if (newVal) {
-        paymentMethod.value = 'cash';
-        cashReceived.value = '';
-        qrisStatus.value = 'idle';
-        clearInterval(qrisPollingInterval);
-    }
-});
+// QRIS Sub-state
+const qrisStatus = ref('idle'); // idle | generating | waiting | paid
+let qrisPollingInterval = null;
 
-const initQrisPayment = () => {
-    paymentMethod.value = 'qris';
+const initQrisLine = () => {
     qrisStatus.value = 'generating';
-    
-    // Simulate generation delay
     setTimeout(() => {
         qrisStatus.value = 'waiting';
         startQrisPolling();
-    }, 800);
+    }, 1000);
 };
 
 const startQrisPolling = () => {
-    // Simulate checking backend every 1s
-    // In real app: call API /api/payment/check/{transactionId}
     let checks = 0;
     if (qrisPollingInterval) clearInterval(qrisPollingInterval);
-
     qrisPollingInterval = setInterval(() => {
         checks++;
-        // Simulate auto-success after 5 seconds
-        if (checks >= 5) {
-            forceSuccessQris();
+        if (checks >= 4) {
+             finalizeQris();
         }
     }, 1000);
 };
+
+const finalizeQris = () => {
+    if (qrisPollingInterval) clearInterval(qrisPollingInterval);
+    qrisStatus.value = 'paid';
+};
+
+// Reset state when opening
+watch(() => props.show, (newVal) => {
+    if (newVal) {
+        payments.value = [{ method: 'CASH', amount: store.total, reference: '' }];
+        showSuccess.value = false;
+        qrisStatus.value = 'idle';
+    }
+});
 
 onUnmounted(() => {
     if (qrisPollingInterval) clearInterval(qrisPollingInterval);
 });
 
-const forceSuccessQris = () => {
-    if (qrisPollingInterval) clearInterval(qrisPollingInterval);
-    qrisStatus.value = 'paid';
-    
-    // Slight delay before finalizing wrapper
-    setTimeout(() => {
-        processCheckout();
-    }, 500);
-};
-
 const processCheckout = async () => {
-    // Validation for cash
-    if (paymentMethod.value === 'cash' && (!canCheckout.value || isProcessing.value)) return;
+    if (!canCheckout.value) return;
     
     isProcessing.value = true;
-
-    // Use current date for offline consistency
     const now = new Date().toISOString();
 
-    // Construct Payload for Backend
-    const clientUuid = crypto.randomUUID();
-
     const payload = {
-        client_uuid: clientUuid,
         customer_id: store.customer ? store.customer.id : null,
-        redeem_points: 0, 
         items: store.cart.map(item => ({
             id: item.id,
             name: item.name,
@@ -155,305 +119,249 @@ const processCheckout = async () => {
         })),
         totals: {
             subtotal: store.subtotal,
-            tax: store.taxAmount,
+            tax: 0,
             discount: 0,
             grandTotal: store.total
         },
         payment: {
-            method: paymentMethod.value.toUpperCase(),
-            cashReceived: paymentMethod.value === 'cash' ? parseInt(cashReceived.value) : store.total,
-            change: paymentMethod.value === 'cash' ? changeAmount.value : 0
+            method: payments.value.length > 1 ? 'split' : payments.value[0].method,
+            items: payments.value.map(p => ({
+                method: p.method,
+                amount: p.amount,
+                reference: p.reference
+            }))
         },
         timestamp: now
     };
 
-    // OFFLINE HANDLING
-    if (!navigator.onLine) {
-        try {
-            const localId = await offlineSync.saveTransactionLocally(payload);
-            lastTransaction.value = {
-                ...payload,
-                invoice_number: `OFF-${Date.now().toString().slice(-6)}`,
-                id: localId,
-                created_at: now,
-                change_amount: payload.payment.change,
-                is_offline: true
-            };
-            showSuccess.value = true;
-            store.clearCart();
-            handlePrint();
-            isProcessing.value = false;
-            return;
-        } catch (e) {
-            alert('Gagal menyimpan transaksi lokal: ' + e.message);
-            isProcessing.value = false;
-            return;
-        }
-    }
-
     try {
-        const response = await axios.post(route('pos.store'), payload);
-        // ... rest of online logic
-
-        if (response.data.success) {
-            // Success
+        if (!navigator.onLine) {
+            const localId = await offlineSync.saveTransactionLocally(payload);
+            lastTransaction.value = { 
+                ...payload, 
+                invoice_number: `OFF-${Date.now().toString().slice(-6)}`,
+                change_amount: changeAmount.value,
+                is_offline: true 
+            };
+        } else {
+            const response = await axios.post(route('pos.store'), payload);
             lastTransaction.value = {
                 ...payload,
                 invoice_number: response.data.invoice_number,
-                id: response.data.transaction_id,
-                created_at: new Date().toISOString(),
-                change_amount: payload.payment.change // Frontend display helper
+                transaction_id: response.data.transaction_id,
+                change_amount: changeAmount.value
             };
+        }
 
-            showSuccess.value = true;
-            store.clearCart();
-            
-            // Auto print receipt
-            handlePrint();
-        } 
+        showSuccess.value = true;
+        store.clearCart();
+        printReceipt(lastTransaction.value);
     } catch (error) {
-        console.error('Transaction failed', error);
-        
-        // Handle specific error messages from backend (e.g., Stock Insufficient)
-        const msg = error.response?.data?.message || 'Transaction failed. Please try again.';
-        alert(msg);
+        alert(error.response?.data?.message || 'Transaction failed. Check connection.');
     } finally {
         isProcessing.value = false;
-        if (qrisPollingInterval) clearInterval(qrisPollingInterval);
     }
-};
-
-const handlePrint = () => {
-    if (lastTransaction.value) {
-        printReceipt(lastTransaction.value);
-    }
-};
-
-const close = () => {
-    showSuccess.value = false;
-    cashReceived.value = '';
-    paymentMethod.value = 'cash';
-    lastTransaction.value = null;
-    emit('close');
 };
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
+        style: 'currency', currency: 'IDR', minimumFractionDigits: 0
     }).format(value);
+};
+
+const close = () => {
+    showSuccess.value = false;
+    emit('close');
 };
 </script>
 
 <template>
-    <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
         
-        <!-- Main Checkout Box -->
-        <div v-if="!showSuccess" class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-                <h3 class="font-bold text-lg text-zinc-900 dark:text-white">Payment Method</h3>
-                <button @click="$emit('close')" class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
-                    <X :size="20" class="text-zinc-500" />
+        <!-- MAIN CHECKOUT CONSOLE -->
+        <div v-if="!showSuccess" class="bg-white dark:bg-dark-surface w-full max-w-4xl rounded-[32px] shadow-premium overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+            
+            <!-- Header Section -->
+            <div class="px-10 py-8 border-b border-surface-100 dark:border-dark-border flex items-center justify-between shrink-0 bg-surface-50/50 dark:bg-dark-bg/50">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-lg">
+                        <CreditCard :size="24" stroke-width="2.5" />
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">Checkout Terminal</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Multi-Payment Consolidation</p>
+                    </div>
+                </div>
+                <button @click="close" class="w-12 h-12 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-2xl transition-all">
+                    <X :size="24" class="text-slate-400" stroke-width="3" />
                 </button>
             </div>
 
-            <!-- Payment Tabs -->
-            <div class="flex p-2 bg-gray-50 dark:bg-zinc-950/50 mx-6 mt-6 rounded-xl shrink-0">
-                <button 
-                    @click="paymentMethod = 'cash'"
-                    class="flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2"
-                    :class="paymentMethod === 'cash' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700'"
-                >
-                    <span>💵</span> Cash
-                </button>
-                <button 
-                    @click="initQrisPayment"
-                    class="flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2"
-                    :class="paymentMethod === 'qris' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700'"
-                >
-                    <span>📱</span> QRIS
-                </button>
-            </div>
-
-            <div class="p-6 space-y-6 overflow-y-auto">
-                <!-- Total Display -->
-                <div class="text-center space-y-1">
-                    <p class="text-sm text-zinc-500">Total Amount</p>
-                    <p class="text-4xl font-black text-red-600 dark:text-red-400">
-                        {{ formatCurrency(store.total) }}
-                    </p>
-                </div>
-
-                <!-- CASH MODE -->
-                <div v-if="paymentMethod === 'cash'" class="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Cash Received</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">Rp</span>
-                            <input 
-                                v-model="cashReceived"
-                                type="number" 
-                                class="w-full pl-12 pr-4 py-4 text-xl font-bold rounded-xl border-gray-200 dark:border-zinc-700 dark:bg-zinc-800 focus:ring-2 focus:ring-red-500 transition-all"
-                                placeholder="0"
-                                autofocus
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Change Display -->
-                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-                        <span class="text-sm font-medium text-zinc-500">Change</span>
-                        <div class="flex flex-col items-end">
-                             <span class="text-xl font-bold text-zinc-900 dark:text-white">{{ formatCurrency(changeAmount) }}</span>
-                             <span v-if="changeAmount < 0" class="text-xs text-red-500 font-bold">Insufficient</span>
-                        </div>
-                       
-                    </div>
-
-                    <!-- Quick Cash Buttons -->
-                    <div class="grid grid-cols-3 gap-2">
-                        <button 
-                            v-for="amount in [20000, 50000, 100000]" 
-                            :key="amount"
-                            @click="cashReceived = (parseInt(cashReceived) || 0) + amount"
-                            class="py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors active:bg-gray-200"
-                        >
-                            +{{ formatCurrency(amount) }}
-                        </button>
-                        <button @click="cashReceived = store.total" class="py-2 text-sm font-bold rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors col-span-3">
-                            Pas ({{ formatCurrency(store.total) }})
-                        </button>
-                    </div>
-                </div>
-
-                <!-- QRIS MODE -->
-                <div v-if="paymentMethod === 'qris'" class="flex flex-col items-center space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div class="flex-1 overflow-hidden flex">
+                <!-- Left Panel: Summary & Split Payments -->
+                <div class="flex-1 p-10 overflow-y-auto space-y-10 custom-scrollbar border-r border-surface-100 dark:border-dark-border">
                     
-                    <div class="relative group">
-                        <!-- Simulated QR Code Container -->
-                        <div class="w-48 h-48 bg-white border-2 border-zinc-900 rounded-xl p-2 shadow-lg flex items-center justify-center overflow-hidden relative">
-                             <!-- Loading State -->
-                            <div v-if="qrisStatus === 'generating'" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
-                                <Loader2 :size="32" class="animate-spin text-zinc-300 mb-2" />
-                                <span class="text-xs text-zinc-400 font-bold">Generating QR...</span>
-                            </div>
+                    <!-- TOTAL HERO -->
+                    <div class="p-8 bg-brand-50 dark:bg-brand-900/10 rounded-[28px] border border-brand-100 dark:border-brand-900/30 text-center relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="text-[10px] font-black text-brand-600 uppercase tracking-[0.3em]">Consolidated Amount Due</span>
+                            <h2 class="text-6xl font-black text-brand-600 dark:text-brand-400 tracking-tighter mt-2 tabular-nums italic">
+                                {{ formatCurrency(store.total) }}
+                            </h2>
+                        </div>
+                        <CreditCard :size="120" class="absolute -right-8 -bottom-8 text-brand-600/5 rotate-12" />
+                    </div>
 
-                            <!-- Success Overlay -->
-                             <div v-if="qrisStatus === 'paid'" class="absolute inset-0 flex flex-col items-center justify-center bg-green-500/90 z-20 text-white animate-in fade-in">
-                                <CheckCircle :size="48" class="mb-2 drop-shadow-md" />
-                                <span class="font-bold drop-shadow-md">PAID</span>
+                    <!-- PAYMENT SPLITS -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Payment Breakdown</h4>
+                            <button @click="addPaymentLine()" class="flex items-center gap-2 text-[10px] font-black text-brand-600 hover:text-brand-700 uppercase tracking-widest">
+                                <Plus :size="14" /> ADD SPLIT
+                            </button>
+                        </div>
+                        
+                        <div v-for="(p, index) in payments" :key="index" class="p-6 bg-white dark:bg-dark-surface rounded-3xl border border-surface-200 dark:border-dark-border shadow-sm flex flex-col gap-6 animate-in slide-in-from-left-4 duration-300">
+                            <!-- Method Selection (Full-Width Primary Grid) -->
+                            <div class="w-full grid grid-cols-5 gap-1.5 bg-surface-50 dark:bg-dark-bg p-1.5 rounded-2xl border border-surface-200 dark:border-dark-border shadow-inner">
+                                <button v-for="method in ['CASH', 'QRIS', 'DEBIT', 'CREDIT', 'VOUCHER']" 
+                                        :key="method"
+                                        @click="p.method = method"
+                                        class="py-3 text-[10px] font-black rounded-xl transition-all uppercase tracking-tight border-2"
+                                        :class="p.method === method ? 'bg-brand-600 text-white border-brand-500 shadow-md scale-[1.02]' : 'text-slate-400 border-transparent hover:bg-surface-100 dark:hover:bg-dark-surface'">
+                                    {{ method }}
+                                </button>
                             </div>
-
-                            <!-- "Real" QR Image (Placeholder API) -->
-                            <img 
-                                v-if="qrisStatus !== 'generating'"
-                                :src="`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KELONTONGPOS-${store.total}`" 
-                                class="w-full h-full object-contain mix-blend-multiply opacity-90"
-                                alt="QRIS Code"
-                            />
                             
-                            <!-- Logo Overlay -->
-                            <div v-if="qrisStatus === 'waiting'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div class="bg-white p-1 rounded-full shadow-sm">
-                                    <div class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-[8px] font-black">
-                                        K
-                                    </div>
+                            <div class="flex items-center gap-4">
+                                <!-- Amount Input (Wider) -->
+                                <div class="flex-[2] relative">
+                                    <input v-model.number="p.amount" type="number" 
+                                           class="w-full pl-12 pr-4 py-4 bg-surface-50 dark:bg-dark-bg border-none rounded-2xl text-xl font-black tracking-tight focus:ring-2 focus:ring-brand-500 transition-all tabular-nums shadow-sm" />
+                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">Rp</div>
+                                </div>
+
+                                <!-- Reference / Card Number -->
+                                <div class="flex-1 relative">
+                                    <input v-model="p.reference" type="text" placeholder="REF #" 
+                                           class="w-full px-5 py-4 bg-surface-50 dark:bg-dark-bg border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-brand-500 transition-all uppercase shadow-sm" />
+                                </div>
+
+                                <!-- Inline Actions -->
+                                <div class="flex items-center gap-2">
+                                    <button v-if="p.method === 'QRIS' && qrisStatus === 'idle'" @click="initQrisLine" class="p-4 bg-brand-50 text-brand-600 rounded-2xl hover:bg-brand-100 transition-all border border-brand-100">
+                                        <QrCode :size="20" />
+                                    </button>
+                                    <button @click="removePaymentLine(index)" class="p-4 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all border border-red-50/0 hover:border-red-100">
+                                        <Trash2 :size="20" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Scan Frame Animation -->
-                        <div v-if="qrisStatus === 'waiting'" class="absolute -inset-4 border-2 border-red-500/30 rounded-2xl animate-pulse"></div>
                     </div>
+                </div>
 
-                    <div class="text-center space-y-1">
-                        <p class="text-sm font-bold text-zinc-900 dark:text-white flex items-center justify-center gap-2">
-                            <span v-if="qrisStatus === 'waiting'" class="relative flex h-3 w-3">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                <!-- Right Panel: Controls & Actions -->
+                <div class="w-[380px] p-10 bg-surface-50 dark:bg-dark-bg/20 flex flex-col space-y-8 shrink-0">
+                    
+                    <!-- Balance Summary Card -->
+                    <div class="space-y-3">
+                         <div class="flex justify-between items-center text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            <span>Balance Due</span>
+                            <span :class="totalPaid >= store.total ? 'text-emerald-500' : 'text-red-500'">
+                                {{ formatCurrency(Math.max(0, store.total - totalPaid)) }}
                             </span>
-                            <span v-if="qrisStatus === 'generating'">Preparing QRIS...</span>
-                            <span v-else-if="qrisStatus === 'waiting'">Waiting for payment...</span>
-                            <span v-else-if="qrisStatus === 'paid'" class="text-green-600">Payment Verified!</span>
-                        </p>
-                        <p class="text-xs text-zinc-500">Scan via GoPay, OVO, Dana, BCA, etc.</p>
+                        </div>
+                        <div class="h-2 bg-slate-200 dark:bg-dark-border rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 transition-all duration-500" 
+                                 :style="{ width: Math.min(100, (totalPaid / store.total) * 100) + '%' }"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            <span>Kembalian</span>
+                            <span class="text-slate-900 dark:text-zinc-200">{{ formatCurrency(changeAmount) }}</span>
+                        </div>
                     </div>
 
-                    <div class="w-full p-3 bg-blue-50 text-blue-700 rounded-lg text-xs flex items-start gap-2">
-                        <Info :size="14" class="shrink-0 mt-0.5" />
-                        <p>This is a simulated QRIS. The system will automatically detect payment after 5 seconds.</p>
+                    <!-- QRIS Interaction Zone -->
+                    <div v-if="qrisStatus !== 'idle'" class="p-6 bg-white dark:bg-dark-surface rounded-3xl shadow-soft border border-brand-100 dark:border-brand-900/30 flex flex-col items-center gap-4 text-center animate-in zoom-in-95">
+                        <div class="w-40 h-40 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                             <div v-if="qrisStatus === 'generating'" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                                <Loader2 :size="24" class="animate-spin text-brand-600 mb-2" />
+                                <span class="text-[9px] font-black uppercase text-brand-600">Generating QR...</span>
+                            </div>
+                             <div v-if="qrisStatus === 'paid'" class="absolute inset-0 flex flex-col items-center justify-center bg-emerald-500 z-10 text-white">
+                                <Check :size="48" stroke-width="4" />
+                                <span class="text-[9px] font-black uppercase mt-2">Verified</span>
+                            </div>
+                            <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=POS-${store.total}`" class="w-full h-full mix-blend-multiply opacity-90" />
+                        </div>
+                        <div>
+                             <h5 class="text-sm font-black text-slate-800 dark:text-zinc-200 tracking-tight">QRIS Network Ready</h5>
+                             <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold">Awaiting Transaction Settlement</p>
+                        </div>
                     </div>
 
-                </div>
-            </div>
+                    <div class="flex-1"></div>
 
-            <div class="p-6 pt-2 shrink-0 bg-white dark:bg-zinc-900 z-10">
-                <button 
-                    v-if="paymentMethod === 'cash'"
-                    @click="processCheckout"
-                    :disabled="!canCheckout || isProcessing"
-                    class="w-full py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2"
-                >
-                    <span v-if="isProcessing">Processing...</span>
-                    <span v-else>Complete Payment (Enter)</span>
-                </button>
-
-                 <button 
-                    v-if="paymentMethod === 'qris'"
-                    @click="forceSuccessQris"
-                    :disabled="qrisStatus !== 'waiting'"
-                    class="w-full py-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                    <CheckCircle :size="18" class="text-green-600" />
-                    <span>Simulate Success (Manual)</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Success & Print Modal -->
-        <div v-else class="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-2xl shadow-xl overflow-hidden animate-in zoom-in duration-300">
-            <div class="p-8 text-center space-y-6">
-                <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto text-green-600 dark:text-green-400">
-                    <CheckCircle :size="40" />
-                </div>
-                
-                <div>
-                    <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Transaction Success!</h3>
-                    <p class="text-zinc-500 mt-2">
-                        Paid via {{ paymentMethod === 'qris' ? 'QRIS' : 'Cash' }}
-                        <span v-if="lastTransaction?.is_offline" class="ml-2 inline-flex items-center gap-1 text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded text-[10px]">
-                            <WifiOff :size="10" /> OFFLINE MODE
-                        </span>
-                    </p>
-                </div>
-                
-                <div v-if="paymentMethod === 'cash'" class="p-4 bg-gray-50 rounded-xl">
-                     <p class="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Kembalian</p>
-                    <p class="text-3xl font-black text-zinc-900 dark:text-white">{{ formatCurrency(lastTransaction.change_amount) }}</p>
-                </div>
-                 <div v-else class="p-4 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium">
-                    Payment Verified automatically by system.
-                </div>
-
-                <div class="flex flex-col gap-3">
+                    <!-- BIG BAYAR BUTTON -->
                     <button 
-                        @click="handlePrint"
-                        class="w-full py-3 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                        @click="processCheckout"
+                        :disabled="!canCheckout || isProcessing"
+                        class="w-full py-8 rounded-[28px] bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 dark:disabled:bg-dark-surface text-white flex flex-col items-center justify-center gap-2 shadow-premium hover:shadow-lg transition-all active:scale-95 group"
                     >
-                        <Printer :size="20" />
-                        Print Receipt Again
+                         <div v-if="isProcessing" class="flex items-center gap-3">
+                            <Loader2 :size="32" class="animate-spin" />
+                            <span class="text-xl font-black italic tracking-tighter uppercase font-serif">Consolidating...</span>
+                         </div>
+                         <template v-else>
+                            <span class="text-4xl font-black tracking-tighter uppercase italic leading-none font-serif">BAYAR</span>
+                            <span class="text-[10px] font-black opacity-60 uppercase tracking-[0.3em]">Commit Financial Data</span>
+                         </template>
                     </button>
                     
-                    <button 
-                        @click="close"
-                        class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-colors"
-                    >
-                        New Transaction
-                    </button>
+                    <p class="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest italic flex items-center justify-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Encrypted Node: Terminal_01
+                    </p>
                 </div>
             </div>
         </div>
 
+        <!-- SUCCESS & RECEIPT CONSOLE -->
+        <div v-else class="bg-white dark:bg-dark-surface w-full max-w-lg rounded-[48px] shadow-premium overflow-hidden animate-in zoom-in duration-500">
+            <div class="p-12 text-center space-y-8">
+                <div class="w-32 h-32 bg-emerald-50 dark:bg-emerald-900/20 rounded-[40px] flex items-center justify-center mx-auto text-emerald-500 shadow-inner">
+                    <CheckCircle :size="64" stroke-width="2.5" />
+                </div>
+                
+                <div class="space-y-2">
+                    <h3 class="text-4xl font-black text-slate-900 dark:text-zinc-100 tracking-tighter italic font-serif uppercase">Verified Done.</h3>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Transaction Registered • #{{ lastTransaction?.invoice_number }}</p>
+                    <div v-if="lastTransaction?.is_offline" class="mt-4 inline-flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest border border-amber-200">
+                        <WifiOff :size="14" /> OFFLINE CACHE ACTIVE
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="p-6 bg-surface-50 dark:bg-dark-bg/50 rounded-3xl border border-surface-100 dark:border-dark-border text-left">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Return Change</span>
+                        <div class="text-2xl font-black text-slate-900 dark:text-zinc-100 mt-1 tabular-nums italic">{{ formatCurrency(lastTransaction?.change_amount || 0) }}</div>
+                    </div>
+                    <div class="p-6 bg-surface-50 dark:bg-dark-bg/50 rounded-3xl border border-surface-100 dark:border-dark-border text-left">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Method</span>
+                        <div class="text-2xl font-black text-brand-600 mt-1 uppercase italic">{{ lastTransaction?.payments?.[0]?.method || 'SETTLED' }}</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button @click="printReceipt(lastTransaction)" class="w-full py-5 rounded-2xl bg-slate-900 dark:bg-zinc-800 text-white font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 transition-all hover:bg-black active:scale-95">
+                        <Printer :size="20" /> RE-PRINT RECEIPT
+                    </button>
+                    <button @click="close" class="w-full py-5 rounded-2xl border-2 border-slate-200 dark:border-dark-border text-slate-600 dark:text-zinc-400 font-black uppercase tracking-widest transition-all hover:bg-slate-50 dark:hover:bg-zinc-800">
+                        NEXT TRANSACTION 🚀
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>

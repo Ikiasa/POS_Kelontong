@@ -11,7 +11,9 @@ return new class extends Migration
         // 1. Vouchers Table
         Schema::create('vouchers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->constrained()->cascadeOnDelete(); // Added store_id
             $table->string('code')->unique();
+            $table->string('name'); // Added name column
             $table->string('type'); // discount, cash_voucher
             $table->decimal('value', 15, 2);
             $table->decimal('min_transaction', 15, 2)->default(0);

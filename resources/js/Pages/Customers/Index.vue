@@ -1,8 +1,9 @@
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
+import DataTable from '@/Components/Common/DataTable.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { Users, Phone, Mail, Plus, Search, ChevronRight } from 'lucide-vue-next';
+import { Users, Phone, Mail, Plus, Search, UserPlus, Star } from 'lucide-vue-next';
 
 const props = defineProps({
     customers: Object,
@@ -22,124 +23,100 @@ const submit = () => {
     });
 };
 
-const getTierColor = (tier) => {
-    switch (tier) {
-        case 'platinum': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-        case 'gold': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-        default: return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
+const columns = [
+    { key: 'identity', label: 'Persona', sortable: false },
+    { key: 'tier', label: 'Loyalty Protocol', sortable: true },
+    { key: 'points_balance', label: 'Equilibrium', align: 'right', sortable: true },
+    { key: 'last_visit_at', label: 'Temporal Marker', sortable: true }
+];
+
+const getTierStyle = (tier) => {
+    switch (tier?.toLowerCase()) {
+        case 'platinum': return 'bg-brand-50 text-brand-600 border-brand-100';
+        case 'gold': return 'bg-amber-50 text-amber-600 border-amber-100';
+        default: return 'bg-slate-50 text-slate-400 border-slate-100';
     }
 };
 
 const formatNumber = (val) => new Intl.NumberFormat('id-ID').format(val);
+const handleEdit = (item) => { /* logic to open edit modal */ };
 </script>
 
 <template>
-    <Head title="Customers & Loyalty" />
+    <Head title="Client Relations" />
 
-    <MainLayout title="Customer Management">
-        <div class="space-y-6">
-            <!-- Summary Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
-                        <Users class="text-red-600" />
-                        Customer Management
-                    </h2>
-                </div>
-                <!-- Quick Add Form -->
-                <div class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 max-w-2xl">
-                    <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div class="md:col-span-1">
-                            <input v-model="form.name" type="text" placeholder="Full Name" required
-                                   class="w-full h-10 px-3 text-sm bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-red-500">
-                        </div>
-                        <div class="md:col-span-1">
-                            <input v-model="form.phone" type="text" placeholder="Phone (WA)" required
-                                   class="w-full h-10 px-3 text-sm bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-red-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <input v-model="search" type="text" placeholder="Search customers..."
-                           class="w-full pl-10 h-11 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-red-500 text-sm">
-                        </div>
-                        <button @click="openModal()" 
-                                class="bg-red-600 hover:bg-red-700 text-white px-6 h-11 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-red-600/20 transition-all">
-                            <UserPlus :size="18" />
-                            New Customer
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Customer Table -->
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-zinc-50 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800">
-                                <th class="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Loyalty Tier</th>
-                                <th class="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider text-right">Points</th>
-                                <th class="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider">Last Visit</th>
-                                <th class="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-wider text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                            <tr v-for="c in customers.data" :key="c.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors group">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400 font-bold">
-                                            {{ c.name.charAt(0) }}
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-zinc-900 dark:text-white">{{ c.name }}</div>
-                                            <div class="text-xs text-zinc-500 flex items-center gap-1">
-                                                <Phone :size="10" /> {{ c.phone }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest" :class="getTierColor(c.tier)">
-                                        {{ c.tier }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                        {{ formatNumber(c.points_balance) }}
-                                    </div>
-                                    <div class="text-[10px] text-zinc-400 uppercase">Points</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
-                                    {{ c.last_visit_at ? new Date(c.last_visit_at).toLocaleDateString() : 'Never' }}
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <button @click="openModal(c)" class="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                        <Edit2 :size="16" />
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr v-if="customers.data.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-zinc-500">
-                                    No customers found. Start by adding one above.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div v-if="customers.links.length > 3" class="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-center gap-2">
-                    <button v-for="link in customers.links" :key="link.label"
-                            @click="link.url && router.visit(link.url)"
-                            v-html="link.label"
-                            :disabled="!link.url"
-                            class="px-3 py-1 text-sm rounded-lg border transition-all"
-                            :class="link.active 
-                                ? 'bg-indigo-600 border-indigo-600 text-white font-bold' 
-                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-30'">
+    <MainLayout title="Persona Management">
+        <template #header-actions>
+             <div class="flex items-center gap-4">
+                <div class="bg-white dark:bg-dark-surface p-2 rounded-2xl border border-surface-100 dark:border-dark-border shadow-soft flex items-center gap-2">
+                    <input v-model="form.name" type="text" placeholder="Identity Name" 
+                           class="bg-transparent border-none text-[10px] font-black uppercase tracking-widest px-4 focus:ring-0 w-32 outline-none">
+                    <div class="w-px h-6 bg-surface-100 dark:bg-dark-border"></div>
+                     <input v-model="form.phone" type="text" placeholder="Contact Matrix" 
+                           class="bg-transparent border-none text-[10px] font-black uppercase tracking-widest px-4 focus:ring-0 w-32 outline-none">
+                    <button @click="submit" :disabled="form.processing"
+                            class="bg-brand-600 hover:bg-brand-700 text-white p-2 rounded-xl transition-all active:scale-95 disabled:opacity-50">
+                        <Plus :size="16" stroke-width="3" />
                     </button>
                 </div>
             </div>
+        </template>
+
+        <div class="space-y-8 animate-in fade-in duration-500">
+            
+            <DataTable 
+                :columns="columns"
+                :items="customers.data"
+                title="Client Registry"
+                subtitle="High-Affinity Loyalty Accounts"
+                searchPlaceholder="Analyze identity, contact, or tier..."
+                @edit="handleEdit"
+            >
+                <!-- IDENTITY CELL -->
+                <template #col-identity="{ item }">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/10 flex items-center justify-center text-brand-600 font-black text-lg shadow-inner">
+                            {{ item.name.charAt(0) }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black text-slate-900 dark:text-zinc-100 uppercase italic font-serif">{{ item.name }}</span>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                <Phone :size="10" /> {{ item.phone }}
+                            </span>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- TIER CELL -->
+                <template #col-tier="{ item }">
+                    <div class="flex items-center gap-2">
+                        <span class="px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest flex items-center gap-2" :class="getTierStyle(item.tier)">
+                            <Star v-if="item.tier === 'platinum' || item.tier === 'gold'" :size="10" fill="currentColor" />
+                            {{ item.tier || 'GENERIC' }}
+                        </span>
+                    </div>
+                </template>
+
+                <!-- EQUILIBRIUM CELL (POINTS) -->
+                <template #col-points_balance="{ item }">
+                    <div class="flex flex-col items-end">
+                        <span class="text-xl font-black italic tabular-nums text-emerald-500">{{ formatNumber(item.points_balance) }}</span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Loyalty Credits</span>
+                    </div>
+                </template>
+
+                <!-- TEMPORAL MARKER CELL (LAST VISIT) -->
+                <template #col-last_visit_at="{ item }">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                             {{ item.last_visit_at ? new Date(item.last_visit_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : 'STAGNANT' }}
+                        </span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Last Interaction</span>
+                    </div>
+                </template>
+
+            </DataTable>
+
         </div>
     </MainLayout>
 </template>

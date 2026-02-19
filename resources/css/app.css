@@ -1,62 +1,75 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-@source '../**/*.vue';
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.vue";
 
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Brand Color Palette - Modern Indigo (Clean & Tech) */
-    --color-brand-50: #eef2ff;
-    --color-brand-100: #e0e7ff;
-    --color-brand-200: #c7d2fe;
-    --color-brand-300: #a5b4fc;
-    --color-brand-400: #818cf8;
-    --color-brand-500: #6366f1;
-    --color-brand-600: #4f46e5;
-    /* Primary Brand - Indigo */
-    --color-brand-700: #4338ca;
-    --color-brand-800: #3730a3;
-    --color-brand-900: #312e81;
+    /* Brand Color Palette - Modern Indigo (Enterprise Focus) */
+    --color-brand-50: #f5f7ff;
+    --color-brand-100: #ebf0fe;
+    --color-brand-200: #dce4fd;
+    --color-brand-300: #c1ccfb;
+    --color-brand-400: #9ba6f7;
+    --color-brand-500: #7176f1;
+    --color-brand-600: #554ae5;
+    /* Core Brand */
+    --color-brand-700: #463bcc;
+    --color-brand-800: #3a32a6;
+    --color-brand-900: #332d84;
     --color-brand-950: #1e1b4b;
 
-    /* Semantic Colors - Modern & Soft */
+    /* Neutrals - Slate (Executive & Serious) */
+    --color-surface-50: #f8fafc;
+    --color-surface-100: #f1f5f9;
+    --color-surface-200: #e2e8f0;
+    --color-surface-300: #cbd5e1;
+    --color-surface-400: #94a3b8;
+    --color-surface-500: #64748b;
+    --color-surface-600: #475569;
+    --color-surface-700: #334155;
+    --color-surface-800: #1e293b;
+    --color-surface-900: #0f172a;
+
+    /* Semantic States */
     --color-success: #10b981;
-    /* Emerald */
-    --color-info: #06b6d4;
-    /* Cyan */
+    --color-info: #3b82f6;
     --color-warning: #f59e0b;
-    /* Amber */
     --color-danger: #ef4444;
-    /* Red */
-    --color-primary-blue: #3b82f6;
 
-    /* Dark Background - Soft Charcoal (Reduced Contrast) */
-    --color-dark-bg: #1e1e21;
-    /* Was #18181b - Slightly lighter/softer */
-    --color-dark-surface: #2a2a2d;
-    /* Was #27272a - Subtle elevation */
+    /* Dark Mode Architecture (Soft Contrast Charcoal) */
+    --color-dark-bg: #0f1115;
+    --color-dark-surface: #17191e;
+    --color-dark-border: #262932;
+    --color-dark-text-muted: #94a3b8;
+    --color-dark-text-vibrant: #f1f5f9;
 
-    /* Global Text for Dark Mode */
-    --color-dark-text: #e4e4e7;
-    /* Zinc 200 - Off-white */
-    --color-dark-border: #3f3f46;
-    /* Zinc 700 - Softer borders */
-    /* Zinc 700 - Softer borders */
+    /* Elevation & Shadows */
+    --shadow-premium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-soft: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 
-    /* Dark Mode Colors */
-    --color-charcoal-surface: #2a2a2d;
-    --color-charcoal-main: #1e1e21;
+    /* Spacing Scale (Maison Standard: 8px base) */
+    --spacing: 0.25rem;
+    /* 4px base, so p-2 = 8px, p-4 = 16px */
 }
 
 @layer base {
+    body {
+        @apply transition-colors duration-300;
+    }
+
     .dark body {
-        @apply bg-zinc-950 text-zinc-200;
+        @apply bg-dark-bg text-dark-text-vibrant;
+    }
+
+    /* Standard Card Pattern */
+    .premium-card {
+        @apply bg-white dark:bg-dark-surface border border-surface-100 dark:border-dark-border rounded-2xl shadow-premium;
     }
 }
