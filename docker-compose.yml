@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pos_kelontong_db
+    environment:
+      POSTGRES_DB: pos_kelontong
+      POSTGRES_USER: bihadmin
+      POSTGRES_PASSWORD: bihan_password123
+    ports:
+      - "5433:5432"
+    volumes:
+      - pos_kelontong_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pos_kelontong_data:

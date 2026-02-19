@@ -1,0 +1,90 @@
+--- TABLE: migrations ---
+CREATE TABLE "migrations" ("id" integer primary key autoincrement not null, "migration" varchar not null, "batch" integer not null)
+
+--- TABLE: password_reset_tokens ---
+CREATE TABLE "password_reset_tokens" ("email" varchar not null, "token" varchar not null, "created_at" datetime, primary key ("email"))
+
+--- TABLE: sessions ---
+CREATE TABLE "sessions" ("id" varchar not null, "user_id" integer, "ip_address" varchar, "user_agent" text, "payload" text not null, "last_activity" integer not null, primary key ("id"))
+
+--- TABLE: cache ---
+CREATE TABLE "cache" ("key" varchar not null, "value" text not null, "expiration" integer not null, primary key ("key"))
+
+--- TABLE: cache_locks ---
+CREATE TABLE "cache_locks" ("key" varchar not null, "owner" varchar not null, "expiration" integer not null, primary key ("key"))
+
+--- TABLE: jobs ---
+CREATE TABLE "jobs" ("id" integer primary key autoincrement not null, "queue" varchar not null, "payload" text not null, "attempts" integer not null, "reserved_at" integer, "available_at" integer not null, "created_at" integer not null)
+
+--- TABLE: job_batches ---
+CREATE TABLE "job_batches" ("id" varchar not null, "name" varchar not null, "total_jobs" integer not null, "pending_jobs" integer not null, "failed_jobs" integer not null, "failed_job_ids" text not null, "options" text, "cancelled_at" integer, "created_at" integer not null, "finished_at" integer, primary key ("id"))
+
+--- TABLE: failed_jobs ---
+CREATE TABLE "failed_jobs" ("id" integer primary key autoincrement not null, "uuid" varchar not null, "connection" text not null, "queue" text not null, "payload" text not null, "exception" text not null, "failed_at" datetime not null default CURRENT_TIMESTAMP)
+
+--- TABLE: journal_items ---
+CREATE TABLE "journal_items" ("id" integer primary key autoincrement not null, "journal_entry_id" integer not null, "account_code" varchar not null, "account_name" varchar not null, "debit" numeric not null default '0', "credit" numeric not null default '0', "created_at" datetime, "updated_at" datetime, foreign key("journal_entry_id") references "journal_entries"("id") on delete cascade)
+
+--- TABLE: audit_logs ---
+CREATE TABLE "audit_logs" ("id" integer primary key autoincrement not null, "user_id" integer, "action" varchar not null, "target_type" varchar, "target_id" integer, "old_values" text, "new_values" text, "ip_address" varchar, "user_agent" varchar, "created_at" datetime, "updated_at" datetime, foreign key("user_id") references "users"("id"))
+
+--- TABLE: stores ---
+CREATE TABLE "stores" ("id" integer primary key autoincrement not null, "name" varchar not null, "address" varchar, "created_at" datetime, "updated_at" datetime)
+
+--- TABLE: users ---
+CREATE TABLE "users" ("id" integer primary key autoincrement not null, "name" varchar not null, "email" varchar not null, "email_verified_at" datetime, "password" varchar not null, "remember_token" varchar, "created_at" datetime, "updated_at" datetime, "store_id" integer, "role" varchar not null default 'cashier', foreign key("store_id") references "stores"("id"))
+
+--- TABLE: categories ---
+CREATE TABLE "categories" ("id" integer primary key autoincrement not null, "name" varchar not null, "created_at" datetime, "updated_at" datetime)
+
+--- TABLE: products ---
+CREATE TABLE "products" ("id" integer primary key autoincrement not null, "store_id" integer, "category_id" integer, "name" varchar not null, "barcode" varchar, "price" numeric not null, "cost_price" numeric not null default '0', "stock" integer not null default '0', "image" varchar, "created_at" datetime, "updated_at" datetime, "lead_time_days" integer not null default '7', "safety_stock" integer not null default '10', "last_sold_at" datetime, foreign key("store_id") references "stores"("id"), foreign key("category_id") references "categories"("id"))
+
+--- TABLE: transaction_items ---
+CREATE TABLE "transaction_items" ("id" integer primary key autoincrement not null, "transaction_id" varchar not null, "product_id" integer not null, "product_name" varchar not null, "price" numeric not null, "cost_price" numeric not null default '0', "quantity" integer not null, "total" numeric not null, "created_at" datetime, "updated_at" datetime, foreign key("transaction_id") references "transactions"("id") on delete cascade, foreign key("product_id") references "products"("id"))
+
+--- TABLE: stock_movements ---
+CREATE TABLE "stock_movements" ("id" integer primary key autoincrement not null, "store_id" integer not null, "product_id" integer not null, "user_id" integer, "reference_type" varchar not null, "reference_id" varchar not null, "quantity_change" integer not null, "balance_after" integer not null, "notes" varchar, "created_at" datetime, "updated_at" datetime, foreign key("user_id") references users("id") on delete no action on update no action, foreign key("product_id") references products("id") on delete cascade on update no action, foreign key("store_id") references stores("id") on delete cascade on update no action)
+
+--- TABLE: journal_entries ---
+CREATE TABLE "journal_entries" ("id" integer primary key autoincrement not null, "store_id" integer not null, "user_id" integer, "reference_number" varchar not null, "transaction_date" date not null, "description" varchar not null, "reference_type" varchar, "reference_id" varchar not null, "is_posted" tinyint(1) not null default ('0'), "posted_at" datetime, "created_at" datetime, "updated_at" datetime, "deleted_at" datetime, foreign key("user_id") references users("id") on delete no action on update no action, foreign key("store_id") references stores("id") on delete cascade on update no action)
+
+--- TABLE: cash_drawers ---
+CREATE TABLE "cash_drawers" ("id" integer primary key autoincrement not null, "store_id" integer not null, "user_id" integer not null, "opening_balance" numeric not null, "closing_balance" numeric, "expected_balance" numeric, "variance" numeric, "notes" text, "opened_at" datetime not null, "closed_at" datetime, "created_at" datetime, "updated_at" datetime, foreign key("store_id") references "stores"("id") on delete cascade, foreign key("user_id") references "users"("id"))
+
+--- TABLE: installments ---
+CREATE TABLE "installments" ("id" integer primary key autoincrement not null, "transaction_id" varchar not null, "installment_number" integer not null, "due_date" date not null, "amount" numeric not null, "paid_amount" numeric not null default '0', "status" varchar not null default 'pending', "paid_at" datetime, "notes" varchar, "created_at" datetime, "updated_at" datetime, foreign key("transaction_id") references "transactions"("id") on delete cascade)
+
+--- TABLE: budgets ---
+CREATE TABLE "budgets" ("id" integer primary key autoincrement not null, "store_id" integer not null, "category_name" varchar not null, "amount_limit" numeric not null, "start_date" date not null, "end_date" date not null, "notes" text, "created_at" datetime, "updated_at" datetime, foreign key("store_id") references "stores"("id") on delete cascade)
+
+--- TABLE: stock_transfers ---
+CREATE TABLE "stock_transfers" ("id" integer primary key autoincrement not null, "transfer_number" varchar not null, "source_store_id" integer not null, "dest_store_id" integer not null, "created_by" integer not null, "received_by" integer, "status" varchar not null default 'pending', "shipped_at" datetime, "received_at" datetime, "notes" text, "created_at" datetime, "updated_at" datetime, foreign key("source_store_id") references "stores"("id"), foreign key("dest_store_id") references "stores"("id"), foreign key("created_by") references "users"("id"), foreign key("received_by") references "users"("id"))
+
+--- TABLE: stock_transfer_items ---
+CREATE TABLE "stock_transfer_items" ("id" integer primary key autoincrement not null, "stock_transfer_id" integer not null, "product_id" integer not null, "request_quantity" integer not null, "shipped_quantity" integer, "received_quantity" integer, "created_at" datetime, "updated_at" datetime, foreign key("stock_transfer_id") references "stock_transfers"("id") on delete cascade, foreign key("product_id") references "products"("id"))
+
+--- TABLE: price_tiers ---
+CREATE TABLE "price_tiers" ("id" integer primary key autoincrement not null, "product_id" integer not null, "store_id" integer, "tier_name" varchar not null, "price" numeric not null, "min_quantity" integer not null default '1', "created_at" datetime, "updated_at" datetime, foreign key("product_id") references "products"("id") on delete cascade, foreign key("store_id") references "stores"("id") on delete cascade)
+
+--- TABLE: customers ---
+CREATE TABLE "customers" ("id" integer primary key autoincrement not null, "store_id" integer, "name" varchar not null, "phone" varchar not null, "email" varchar, "points_balance" integer not null default '0', "tier" varchar not null default 'silver', "last_visit_at" datetime, "created_at" datetime, "updated_at" datetime, foreign key("store_id") references "stores"("id") on delete set null)
+
+--- TABLE: loyalty_logs ---
+CREATE TABLE "loyalty_logs" ("id" integer primary key autoincrement not null, "customer_id" integer not null, "transaction_id" varchar, "points" integer not null, "type" varchar not null, "description" varchar, "created_at" datetime, "updated_at" datetime, foreign key("customer_id") references "customers"("id") on delete cascade, foreign key("transaction_id") references "transactions"("id") on delete set null)
+
+--- TABLE: whatsapp_logs ---
+CREATE TABLE "whatsapp_logs" ("id" integer primary key autoincrement not null, "customer_id" integer, "phone" varchar not null, "message" text not null, "type" varchar not null, "status" varchar not null default 'queued', "sent_at" datetime, "error_message" text, "created_at" datetime, "updated_at" datetime, foreign key("customer_id") references "customers"("id") on delete set null)
+
+--- TABLE: transactions ---
+CREATE TABLE "transactions" ("id" varchar not null, "store_id" integer not null, "user_id" integer not null, "invoice_number" varchar not null, "subtotal" numeric not null, "tax" numeric not null default ('0'), "discount" numeric not null default ('0'), "grand_total" numeric not null, "cash_received" numeric, "change_amount" numeric, "payment_method" varchar not null, "status" varchar not null default ('completed'), "notes" varchar, "transaction_date" datetime not null, "created_at" datetime, "updated_at" datetime, "customer_id" integer, "points_earned" integer not null default '0', "points_redeemed" integer not null default '0', foreign key("user_id") references users("id") on delete no action on update no action, foreign key("store_id") references stores("id") on delete no action on update no action, foreign key("customer_id") references "customers"("id") on delete set null, primary key ("id"))
+
+--- TABLE: fraud_alerts ---
+CREATE TABLE "fraud_alerts" ("id" integer primary key autoincrement not null, "reference_id" varchar, "model_type" varchar, "rule_name" varchar not null, "description" text not null, "severity" varchar not null default 'medium', "user_id" integer, "resolved" tinyint(1) not null default '0', "resolved_at" datetime, "resolved_by" integer, "created_at" datetime, "updated_at" datetime, foreign key("user_id") references "users"("id") on delete set null, foreign key("resolved_by") references "users"("id") on delete set null)
+
+--- TABLE: product_batches ---
+CREATE TABLE "product_batches" ("id" integer primary key autoincrement not null, "store_id" integer not null, "product_id" integer not null, "batch_number" varchar not null, "expiry_date" date, "cost_price" numeric not null, "initial_quantity" integer not null, "current_quantity" integer not null, "received_at" datetime not null, "created_at" datetime, "updated_at" datetime, foreign key("store_id") references "stores"("id") on delete cascade, foreign key("product_id") references "products"("id") on delete cascade)
+
+--- TABLE: inventory_valuations ---
+CREATE TABLE "inventory_valuations" ("id" integer primary key autoincrement not null, "store_id" integer not null, "total_value" numeric not null, "total_items" integer not null, "valuation_date" date not null, "created_at" datetime, "updated_at" datetime, foreign key("store_id") references "stores"("id") on delete cascade)
+

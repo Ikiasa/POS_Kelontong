@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Brand Color Palette - Modern Indigo (Clean & Tech) */
+    --color-brand-50: #eef2ff;
+    --color-brand-100: #e0e7ff;
+    --color-brand-200: #c7d2fe;
+    --color-brand-300: #a5b4fc;
+    --color-brand-400: #818cf8;
+    --color-brand-500: #6366f1;
+    --color-brand-600: #4f46e5;
+    /* Primary Brand - Indigo */
+    --color-brand-700: #4338ca;
+    --color-brand-800: #3730a3;
+    --color-brand-900: #312e81;
+    --color-brand-950: #1e1b4b;
+
+    /* Semantic Colors - Modern & Soft */
+    --color-success: #10b981;
+    /* Emerald */
+    --color-info: #06b6d4;
+    /* Cyan */
+    --color-warning: #f59e0b;
+    /* Amber */
+    --color-danger: #ef4444;
+    /* Red */
+    --color-primary-blue: #3b82f6;
+
+    /* Dark Background - Soft Charcoal (Reduced Contrast) */
+    --color-dark-bg: #1e1e21;
+    /* Was #18181b - Slightly lighter/softer */
+    --color-dark-surface: #2a2a2d;
+    /* Was #27272a - Subtle elevation */
+
+    /* Global Text for Dark Mode */
+    --color-dark-text: #e4e4e7;
+    /* Zinc 200 - Off-white */
+    --color-dark-border: #3f3f46;
+    /* Zinc 700 - Softer borders */
+    /* Zinc 700 - Softer borders */
+
+    /* Dark Mode Colors */
+    --color-charcoal-surface: #2a2a2d;
+    --color-charcoal-main: #1e1e21;
+}
+
+@layer base {
+    .dark body {
+        @apply bg-zinc-950 text-zinc-200;
+    }
+}
