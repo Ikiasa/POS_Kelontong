@@ -10,6 +10,12 @@ class Product extends Model
     use HasFactory;
 
     protected $guarded = []; // Allow mass assignment for all fields (including image)
+    
+    protected $casts = [
+        'attributes' => 'array',
+        'is_weighted' => 'boolean',
+        'is_consignment' => 'boolean',
+    ];
 
     public function batches()
     {

@@ -142,6 +142,22 @@ class ReturnService
                 $data['refund_method'] ?? 'cash'
             );
 
+            // 7. Generate Return Voucher if Store Credit
+            if (($data['refund_method'] ?? 'cash') === 'store_credit') {
+                \App\Models\Voucher::create([
+                    'code' => 'RET-' . strtoupper(Str::random(6)),
+                    'type' => 'cash',
+                    'value' => $totalRefund,
+                    'is_active' => true,
+                    'expires_at' => now()->addMonths(6),
+                    'metadata' => [
+                        'source' => 'return',
+                        'transaction_id' => $transactionId,
+                        'return_id' => $returnTx->id
+                    ]
+                ]);
+            }
+
             return $returnTx;
         });
     }

@@ -35,6 +35,15 @@ class SaleService
     {
         return DB::transaction(function () use ($data, $storeId, $userId) {
             
+            // 0. Idempotency Check
+            if (isset($data['client_uuid'])) {
+                $existing = Transaction::where('client_uuid', $data['client_uuid'])->first();
+                if ($existing) {
+                    \Log::info("Duplicate transaction detected for client_uuid: {$data['client_uuid']}. Returning existing transaction.");
+                    return $existing;
+                }
+            }
+
             // 1. Generate Invoice Number
             $lastInvoice = Transaction::where('store_id', $storeId)
                 ->whereDate('created_at', now())
@@ -72,6 +81,7 @@ class SaleService
             // 2. Create Transaction Header
             $transaction = Transaction::create([
                 'id' => Str::uuid(),
+                'client_uuid' => $data['client_uuid'] ?? null,
                 'store_id' => $storeId,
                 'user_id' => $userId,
                 'customer_id' => $customerId,

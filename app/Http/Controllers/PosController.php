@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\Shift;
+use App\Models\PendingTransaction;
 use App\Services\PricingService;
 use App\Services\SaleService;
 use App\Services\PaymentService;
@@ -70,11 +72,23 @@ class PosController extends Controller
             ];
         });
 
+    // Ensure shift is open
+    $currentShift = Shift::where('store_id', $storeId)
+        ->where('user_id', auth()->id())
+        ->where('status', 'open')
+        ->first();
+
+    $pendingTransactions = PendingTransaction::where('store_id', $storeId)
+        ->where('status', 'pending')
+        ->get();
+
     return \Inertia\Inertia::render('POS/Index', [
         'products' => $products,
         'categories' => $categories,
         'customers' => $customers,
-        'promotions' => $promotions
+        'promotions' => $promotions,
+        'currentShift' => $currentShift,
+        'pendingTransactions' => $pendingTransactions,
     ]);
 }
 

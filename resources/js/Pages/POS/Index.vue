@@ -15,15 +15,19 @@ import {
     Monitor,
     Printer,
     Scan,
-    X
+    X,
+    Wifi,
+    WifiOff
 } from 'lucide-vue-next';
 import CheckoutModal from '@/Components/POS/CheckoutModal.vue';
+import { offlineSync } from '@/Services/OfflineSyncService';
 
 const props = defineProps({
     products: Array,
-    products: Array,
     categories: Array,
     customers: Array,
+    currentShift: Object,
+    pendingTransactions: Array,
 });
 
 const page = usePage();
@@ -32,6 +36,73 @@ const showCheckout = ref(false);
 const barcodeInput = ref(null);
 const currentUser = computed(() => page.props.auth?.user || { name: 'Cashier' });
 const currentDate = ref(new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+
+// Shift State
+const showShiftModal = ref(!props.currentShift);
+const openingBalance = ref(0);
+const cashRecorded = ref(0);
+const showCloseShiftModal = ref(false);
+
+// Offline State
+const isOffline = ref(!navigator.onLine);
+const validationCode = ref('');
+const useOfflineOpen = ref(false);
+
+window.addEventListener('online', () => isOffline.value = false);
+window.addEventListener('offline', () => isOffline.value = true);
+
+const openShift = async () => {
+    try {
+        await axios.post(route('shifts.open'), { 
+            opening_balance: openingBalance.value,
+            validation_code: validationCode.value,
+            is_offline: useOfflineOpen.value
+        });
+        window.location.reload();
+    } catch (e) { alert(e.response?.data?.message || 'Gagal membuka shift'); }
+};
+
+const closeShift = async () => {
+    try {
+        await axios.post(route('shifts.close'), { cash_recorded: cashRecorded.value });
+        window.location.reload();
+    } catch (e) { alert('Gagal menutup shift'); }
+};
+
+// Pending Transaction State
+const showPendingList = ref(false);
+const parkSale = async () => {
+    if (store.cart.length === 0) return;
+    try {
+        await axios.post(route('pending.store'), { 
+            cart: store.cart, 
+            total: store.total,
+            customer_id: selectedCustomer.value?.id 
+        });
+        store.clearCart();
+        window.location.reload(); // Refresh to get updated pending list
+    } catch (e) { alert('Gagal parkir transaksi'); }
+};
+
+const recallSale = async (id) => {
+    try {
+        const res = await axios.get(route('pending.recall', id));
+        store.clearCart();
+        res.data.data.cart_data.forEach(item => store.addToCart(item, item.qty));
+        showPendingList.value = false;
+        // Optionally delete it from pending
+        await axios.delete(route('pending.destroy', id));
+    } catch (e) { alert('Gagal memanggil transaksi'); }
+};
+
+// Price Checker Mode
+const isPriceChecker = ref(false);
+const lastScannedProduct = ref(null);
+const togglePriceChecker = () => {
+    isPriceChecker.value = !isPriceChecker.value;
+    lastScannedProduct.value = null;
+    focusInput();
+};
 
 // Loyalty & Customer State
 const selectedCustomer = ref(null);
@@ -66,9 +137,28 @@ const focusInput = () => {
     if (barcodeInput.value) barcodeInput.value.focus();
 };
 
-onMounted(() => {
+const syncStatus = ref('idle'); // 'idle' | 'syncing'
+
+onMounted(async () => {
     focusInput();
     window.addEventListener('keydown', handleGlobalKeydown);
+    
+    // Initialize Offline Sync
+    if (props.products) {
+        await offlineSync.cacheProducts(props.products);
+    }
+    
+    // Start background sync on mount
+    syncStatus.value = 'syncing';
+    await offlineSync.syncPendingTransactions();
+    syncStatus.value = 'idle';
+
+    // Listen for reconnection
+    window.addEventListener('online', async () => {
+        syncStatus.value = 'syncing';
+        await offlineSync.syncPendingTransactions();
+        syncStatus.value = 'idle';
+    });
 });
 
 onUnmounted(() => {
@@ -96,19 +186,32 @@ const handleGlobalKeydown = (e) => {
 const handleSearch = () => {
     if (!store.searchQuery) return;
     
-    // Direct match check from local props first for speed
-    // Ideally this connects to backend if list is huge, but we have props.products
     const query = store.searchQuery.toLowerCase();
-    const exactMatch = props.products.find(p => p.barcode === query);
     
+    // Fresh Food / Weighted Barcode Check (Prefix 22)
+    if (query.startsWith('22') && query.length === 13) {
+        const productCode = query.substring(2, 7);
+        const weight = parseInt(query.substring(7, 12)) / 1000;
+        const product = props.products.find(p => p.barcode === productCode || p.id == productCode);
+        if (product) {
+            store.addToCart(product, weight);
+            store.searchQuery = '';
+            return;
+        }
+    }
+
+    const exactMatch = props.products.find(p => p.barcode === query);
     if (exactMatch) {
+        if (isPriceChecker.value) {
+            lastScannedProduct.value = exactMatch;
+            store.searchQuery = '';
+            // Auto hide after 5 seconds
+            setTimeout(() => { if (lastScannedProduct.value?.id === exactMatch.id) lastScannedProduct.value = null; }, 5000);
+            return;
+        }
         store.addToCart(exactMatch);
-        store.searchQuery = ''; // Clear after scan
+        store.searchQuery = '';
     } else {
-        // If not exact match, keep query for filter/modal (not fully implemented in this single view yet, assume scan-heavy)
-        // For now, we rely on the computed `filteredProducts` if we wanted a search modal.
-        // But the reference UI implies "Scan & Go". 
-        // Let's look for name match if not barcode
         const nameMatch = props.products.find(p => p.name.toLowerCase().includes(query));
         if (nameMatch) {
              store.addToCart(nameMatch);
@@ -128,11 +231,10 @@ const formatCurrency = (value) => {
 const functionKeys = [
     { key: 'F1', label: 'NEW', action: () => store.clearCart() },
     { key: 'F2', label: 'SEARCH', action: focusInput },
-    { key: 'F3', label: 'QTY', action: () => {} },
-    { key: 'F4', label: 'PRICE', action: () => {} },
-    { key: 'F5', label: 'MEMBER', action: () => {} },
-    { key: 'F6', label: 'DISC', action: () => {} },
-    { key: 'F7', label: 'VOID', action: () => {} },
+    { key: 'F3', label: 'PARK', action: parkSale },
+    { key: 'F4', label: 'RECALL', action: () => showPendingList.value = true },
+    { key: 'F7', label: 'KIOSK', action: togglePriceChecker },
+    { key: 'F8', label: 'OUT', action: () => showCloseShiftModal.value = true },
     { key: 'F12', label: 'BAYAR', action: () => showCheckout.value = true, primary: true },
 ];
 </script>
@@ -176,9 +278,18 @@ const functionKeys = [
                 </div>
 
                 <div class="flex flex-col items-center leading-none gap-0.5">
-                    <span class="opacity-75 text-[10px] uppercase tracking-wider text-zinc-400">Station</span>
-                    <span class="font-bold">CASHIER-01</span>
+                    <span class="opacity-75 text-[10px] uppercase tracking-wider text-zinc-400">Connection</span>
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <Wifi v-if="!isOffline" :size="14" class="text-green-400" />
+                        <WifiOff v-else :size="14" class="text-amber-500" />
+                        <span :class="!isOffline ? 'text-white' : 'text-amber-500'">{{ !isOffline ? 'ONLINE' : 'OFFLINE' }}</span>
+                    </div>
                 </div>
+                <div v-if="syncStatus === 'syncing'" class="flex items-center gap-2 bg-brand-600/20 px-3 py-1 rounded-full animate-pulse border border-brand-500/30">
+                     <div class="w-1.5 h-1.5 bg-brand-400 rounded-full animate-ping"></div>
+                     <span class="text-[10px] font-black uppercase tracking-widest text-brand-300">SYNCING DATA...</span>
+                </div>
+                <div class="flex flex-col items-center leading-none gap-0.5">
                 <div class="flex flex-col items-center leading-none gap-0.5">
                     <span class="opacity-75 text-[10px] uppercase tracking-wider text-zinc-400">Date</span>
                     <span class="font-bold">{{ currentDate }}</span>
@@ -378,6 +489,122 @@ const functionKeys = [
             :redeem-points="redeemPoints"
             :points-value="discountFromPoints"
         />
+
+        <!-- SHIFT START OVERLAY -->
+        <div v-if="showShiftModal" class="fixed inset-0 z-[100] bg-zinc-900 flex items-center justify-center p-4">
+            <div class="bg-white rounded-[32px] w-full max-w-md p-10 shadow-2xl text-center space-y-6">
+                <div class="w-20 h-20 bg-brand-100 text-brand-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Monitor :size="40" stroke-width="2.5" />
+                </div>
+                <h2 class="text-3xl font-black text-zinc-900 tracking-tighter">Buka Shift Baru</h2>
+                <p class="text-zinc-500">Masukkan saldo awal kasir (untuk kembalian) untuk memulai transaksi hari ini.</p>
+                <div class="space-y-4">
+                    <div class="text-left">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">Saldo Awal (Modal Tunai)</label>
+                        <input v-model="openingBalance" type="number" class="w-full text-3xl font-bold p-4 border-2 border-zinc-100 rounded-2xl focus:border-brand-500 outline-none transition-all" />
+                    </div>
+
+                    <!-- Offline Open Toggle -->
+                    <div v-if="isOffline" class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-left">
+                        <div class="flex items-center justify-between mb-2">
+                             <span class="text-xs font-bold text-amber-700">MODA LURIK (OFFLINE)</span>
+                             <input type="checkbox" v-model="useOfflineOpen" class="w-5 h-5 accent-amber-600" />
+                        </div>
+                        <div v-if="useOfflineOpen">
+                             <label class="text-[10px] font-bold text-amber-600 uppercase tracking-widest pl-1">Kode Validasi Kantor Pusat</label>
+                             <input v-model="validationCode" type="text" class="w-full text-xl font-bold p-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 outline-none uppercase" placeholder="ABCDEF" />
+                             <p class="text-[10px] text-amber-700 mt-2">Hubungi admin untuk mendapatkan kode harian jika server terputus.</p>
+                        </div>
+                    </div>
+
+                    <button @click="openShift" class="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black text-lg hover:bg-black transition-all shadow-xl active:scale-95">MULAI KASIR 🚀</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLOSE SHIFT MODAL -->
+        <div v-if="showCloseShiftModal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-[32px] w-full max-w-md p-10 shadow-2xl">
+                <h2 class="text-2xl font-black mb-6 tracking-tight">Tutup Shift & Setoran</h2>
+                <div class="space-y-6">
+                    <div class="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <div class="flex justify-between text-sm mb-1 text-zinc-500">Total Transaksi (Sistem)</div>
+                        <div class="text-xl font-bold text-zinc-900">{{ formatCurrency(store.subtotal) }}</div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">Hitung Tunai di Laci</label>
+                        <input v-model="cashRecorded" type="number" class="w-full text-2xl font-bold p-4 border-2 border-zinc-100 rounded-2xl focus:border-brand-500 outline-none" />
+                    </div>
+                    <div class="flex gap-4">
+                        <button @click="showCloseShiftModal = false" class="flex-1 py-4 font-bold text-zinc-500">Batal</button>
+                        <button @click="closeShift" class="flex-1 py-4 bg-danger text-white rounded-2xl font-black">TUTUP SHIFT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PENDING TRANSACTIONS LIST -->
+        <div v-if="showPendingList" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-end">
+            <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-xl font-black tracking-tight">Transaksi Terparkir</h2>
+                    <button @click="showPendingList = false" class="text-gray-400 hover:text-black"><X :size="24" /></button>
+                </div>
+                <div class="flex-1 overflow-auto p-6 space-y-4">
+                    <div v-if="pendingTransactions.length === 0" class="text-center py-20 text-gray-400 italic">Tidak ada transaksi terparkir</div>
+                    <div v-for="pt in pendingTransactions" :key="pt.id" class="p-4 rounded-2xl border border-gray-100 hover:border-brand-300 transition-all cursor-pointer group" @click="recallSale(pt.id)">
+                        <div class="flex justify-between font-bold text-sm mb-1">
+                            <span>TRANS #{{ pt.id }}</span>
+                            <span class="text-brand-600">{{ formatCurrency(pt.total) }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500">{{ pt.cart_data.length }} items • {{ new Date(pt.created_at).toLocaleTimeString() }}</div>
+                        <div class="mt-2 text-[10px] uppercase text-brand-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">RECALL TRANSACTION →</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRICE CHECKER (KIOSK) OVERLAY -->
+        <div v-if="isPriceChecker" class="fixed inset-0 z-[150] bg-zinc-950 flex flex-col items-center justify-center p-12 text-center text-white">
+            <button @click="togglePriceChecker" class="absolute top-10 right-10 w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center hover:bg-zinc-700 transition-colors">
+                <X :size="32" />
+            </button>
+            <div class="mb-12 animate-pulse">
+                <Scan :size="120" stroke-width="1" class="text-brand-500 mx-auto mb-6" />
+                <h1 class="text-5xl font-black tracking-tightest">SILAKAN SCAN BARCODE</h1>
+                <p class="text-2xl text-zinc-500 mt-4">Untuk mengetahui informasi harga dan promo terbaru</p>
+            </div>
+
+            <!-- Result Display -->
+            <div v-if="lastScannedProduct" class="bg-zinc-900 border-2 border-brand-500/50 rounded-[48px] p-16 w-full max-w-4xl animate-in zoom-in duration-300">
+                <div class="flex items-center gap-16 text-left">
+                    <img v-if="lastScannedProduct.image" :src="lastScannedProduct.image" class="w-64 h-64 object-cover rounded-3xl bg-white" />
+                    <div v-else class="w-64 h-64 bg-zinc-800 rounded-3xl flex items-center justify-center text-zinc-600">
+                        <Package :size="80" />
+                    </div>
+                    <div class="flex-1 space-y-6">
+                        <h2 class="text-6xl font-black leading-tight">{{ lastScannedProduct.name }}</h2>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-8xl font-black text-brand-500">{{ formatCurrency(lastScannedProduct.price).replace('Rp', '').trim() }}</span>
+                            <span class="text-4xl font-bold text-zinc-600">Rp</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="px-6 py-2 bg-brand-500 text-white rounded-full text-2xl font-bold uppercase">{{ lastScannedProduct.category?.name || 'UMUM' }}</span>
+                            <span v-if="lastScannedProduct.stock > 0" class="text-green-500 text-2xl font-bold">STOK TERSEDIA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transparent hidden input for barcode -->
+            <input 
+                ref="barcodeInput"
+                v-model="store.searchQuery"
+                @keydown.enter="handleSearch"
+                class="opacity-0 absolute inset-0 cursor-default"
+                autofocus
+            />
+        </div>
     </div>
 </template>
 

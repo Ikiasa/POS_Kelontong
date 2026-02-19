@@ -15,6 +15,7 @@ class Promotion extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'is_active' => 'boolean',
+        'rule_type' => 'string', // percentage, fixed, buy_x_get_y, volume
     ];
 
     public function product()

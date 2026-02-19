@@ -2,8 +2,9 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { usePosStore } from '@/Stores/posStore';
 import { printReceipt } from '@/Utils/thermalPrinter';
-import { X, Printer, CheckCircle, Loader2, Info } from 'lucide-vue-next';
+import { X, Printer, CheckCircle, Loader2, Info, WifiOff } from 'lucide-vue-next';
 import axios from 'axios';
+import { offlineSync } from '@/Services/OfflineSyncService';
 
 const props = defineProps({
     show: Boolean
@@ -18,9 +19,53 @@ const showSuccess = ref(false);
 const lastTransaction = ref(null);
 
 // Checkout State
-const paymentMethod = ref('cash'); // 'cash' | 'qris'
-const qrisStatus = ref('idle'); // 'idle' | 'generating' | 'waiting' | 'paid'
-let qrisPollingInterval = null;
+const paymentMethod = ref('cash'); // Primary toggle for UI
+const payments = ref([
+    { method: 'CASH', amount: store.total, reference: '' }
+]);
+
+const vouchers = ref([]);
+const voucherCode = ref('');
+
+const addPayment = (method) => {
+    const remaining = store.total - payments.value.reduce((acc, p) => acc + p.amount, 0);
+    if (remaining > 0) {
+        payments.value.push({ method: method, amount: remaining, reference: '' });
+    }
+};
+
+const applyVoucher = async () => {
+    if (!voucherCode.value) return;
+    try {
+        const res = await axios.post(route('vouchers.validate'), { code: voucherCode.value });
+        if (res.data.valid) {
+            const v = res.data.voucher;
+            
+            // Avoid duplicates
+            if (vouchers.value.find(existing => existing.id === v.id)) {
+                alert('Voucher sudah dipakai');
+                return;
+            }
+
+            vouchers.value.push(v);
+            
+            // Add as payment method
+            payments.value.push({ 
+                method: 'VOUCHER', 
+                amount: Math.min(v.value, store.total - totalPaid.value), 
+                reference: v.code 
+            });
+            
+            voucherCode.value = '';
+        } else {
+            alert(res.data.message || 'Voucher tidak valid');
+        }
+    } catch (e) { alert('Gagal memvalidasi voucher'); }
+};
+
+const totalPaid = computed(() => {
+    return payments.value.reduce((acc, p) => acc + p.amount, 0);
+});
 
 const changeAmount = computed(() => {
     const received = parseInt(cashReceived.value) || 0;
@@ -92,10 +137,16 @@ const processCheckout = async () => {
     
     isProcessing.value = true;
 
+    // Use current date for offline consistency
+    const now = new Date().toISOString();
+
     // Construct Payload for Backend
+    const clientUuid = crypto.randomUUID();
+
     const payload = {
+        client_uuid: clientUuid,
         customer_id: store.customer ? store.customer.id : null,
-        redeem_points: 0, // Pending Loyalty implementation
+        redeem_points: 0, 
         items: store.cart.map(item => ({
             id: item.id,
             name: item.name,
@@ -113,11 +164,36 @@ const processCheckout = async () => {
             cashReceived: paymentMethod.value === 'cash' ? parseInt(cashReceived.value) : store.total,
             change: paymentMethod.value === 'cash' ? changeAmount.value : 0
         },
-        timestamp: new Date().toISOString()
+        timestamp: now
     };
+
+    // OFFLINE HANDLING
+    if (!navigator.onLine) {
+        try {
+            const localId = await offlineSync.saveTransactionLocally(payload);
+            lastTransaction.value = {
+                ...payload,
+                invoice_number: `OFF-${Date.now().toString().slice(-6)}`,
+                id: localId,
+                created_at: now,
+                change_amount: payload.payment.change,
+                is_offline: true
+            };
+            showSuccess.value = true;
+            store.clearCart();
+            handlePrint();
+            isProcessing.value = false;
+            return;
+        } catch (e) {
+            alert('Gagal menyimpan transaksi lokal: ' + e.message);
+            isProcessing.value = false;
+            return;
+        }
+    }
 
     try {
         const response = await axios.post(route('pos.store'), payload);
+        // ... rest of online logic
 
         if (response.data.success) {
             // Success
@@ -344,7 +420,12 @@ const formatCurrency = (value) => {
                 
                 <div>
                     <h3 class="text-2xl font-bold text-zinc-900 dark:text-white">Transaction Success!</h3>
-                    <p class="text-zinc-500 mt-2">Paid via {{ paymentMethod === 'qris' ? 'QRIS' : 'Cash' }}</p>
+                    <p class="text-zinc-500 mt-2">
+                        Paid via {{ paymentMethod === 'qris' ? 'QRIS' : 'Cash' }}
+                        <span v-if="lastTransaction?.is_offline" class="ml-2 inline-flex items-center gap-1 text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded text-[10px]">
+                            <WifiOff :size="10" /> OFFLINE MODE
+                        </span>
+                    </p>
                 </div>
                 
                 <div v-if="paymentMethod === 'cash'" class="p-4 bg-gray-50 rounded-xl">

@@ -8,15 +8,15 @@ export const usePosStore = defineStore('pos', () => {
     const customer = ref(null);
 
     // Actions
-    const addToCart = (product) => {
+    const addToCart = (product, qty = 1) => {
         const existingItem = cart.value.find(item => item.id === product.id);
 
         if (existingItem) {
-            existingItem.qty++;
+            existingItem.qty += parseFloat(qty);
         } else {
             cart.value.push({
                 ...product,
-                qty: 1,
+                qty: parseFloat(qty),
                 discount: 0
             });
         }
@@ -25,13 +25,8 @@ export const usePosStore = defineStore('pos', () => {
     const updateQty = (productId, qty) => {
         const item = cart.value.find(item => item.id === productId);
         if (item) {
-            const parsedQty = parseInt(qty);
+            const parsedQty = parseFloat(qty);
             if (isNaN(parsedQty)) {
-                // If invalid input, do update but don't remove yet or keep last valid?
-                // Better to just let it be empty if user is typing, but here this is called on @change (blur).
-                // If blur and empty, maybe set to 1 or remove?
-                // Let's set to 1 if invalid to be safe, or remove if intended. 
-                // Usually empty = 0 or 1. Let's assume 1 for safety to avoid accidental deletion.
                 item.qty = 1;
             } else {
                 item.qty = parsedQty;

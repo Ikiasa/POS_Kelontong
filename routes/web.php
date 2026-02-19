@@ -6,6 +6,15 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->group(function () {
     Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos');
     Route::post('/sales', [\App\Http\Controllers\PosController::class, 'store'])->name('pos.store');
+    
+    // Shift Management
+    Route::post('/shifts/open', [\App\Http\Controllers\ShiftController::class, 'open'])->name('shifts.open');
+    Route::post('/shifts/close', [\App\Http\Controllers\ShiftController::class, 'close'])->name('shifts.close');
+    
+    // Pending Transactions
+    Route::post('/pending-transactions', [\App\Http\Controllers\PendingTransactionController::class, 'store'])->name('pending.store');
+    Route::get('/pending-transactions/{id}/recall', [\App\Http\Controllers\PendingTransactionController::class, 'recall'])->name('pending.recall');
+    Route::delete('/pending-transactions/{id}', [\App\Http\Controllers\PendingTransactionController::class, 'destroy'])->name('pending.destroy');
 });
 
 Route::get('/', function () {
@@ -42,6 +51,9 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
     Route::post('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
     Route::put('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
+    
+    Route::get('/admin/stores', [\App\Http\Controllers\Admin\StoreController::class, 'index'])->name('admin.stores.index');
+    Route::get('/admin/stores/{id}/offline-code', [\App\Http\Controllers\Admin\StoreController::class, 'generateCode'])->name('admin.stores.offline-code');
     Route::get('/admin/suppliers', [\App\Http\Controllers\Admin\SupplierController::class, 'index'])->name('admin.suppliers.index');
     Route::post('/admin/suppliers', [\App\Http\Controllers\Admin\SupplierController::class, 'store'])->name('admin.suppliers.store');
     Route::put('/admin/suppliers/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'update'])->name('admin.suppliers.update');
@@ -127,10 +139,15 @@ Route::middleware('guest')->group(function () {
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
     });
-    // Return Handling
+    // Returns
     Route::get('/returns/create', [\App\Http\Controllers\ReturnController::class, 'create'])->name('returns.create');
     Route::post('/returns', [\App\Http\Controllers\ReturnController::class, 'store'])->name('returns.store');
+
+    // Vouchers & Loyalty
+    Route::post('/api/vouchers/validate', [\App\Http\Controllers\VoucherController::class, 'validateCode'])->name('vouchers.validate');
+    Route::post('/api/vouchers/exchange', [\App\Http\Controllers\VoucherController::class, 'exchangePoints'])->name('vouchers.exchange');
 });
+
 Route::post('logout', function (\Illuminate\Http\Request $request) {
     Illuminate\Support\Facades\Auth::logout();
     $request->session()->invalidate();
