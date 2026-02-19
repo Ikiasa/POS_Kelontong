@@ -276,139 +276,72 @@ const demoProducts = [
             </div>
         </header>
 
-        <!-- Product Features Showcase (Modern Alternating Layout) -->
-        <section id="features" class="py-24 bg-white dark:bg-zinc-950 overflow-hidden">
+        <!-- Product Features Showcase (Refined Grid with Images) -->
+        <section id="features" class="py-24 bg-gray-50 dark:bg-zinc-950">
             <div class="container mx-auto px-6">
-                <div class="text-center max-w-3xl mx-auto mb-24">
+                <div class="text-center max-w-2xl mx-auto mb-20">
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[11px] font-bold uppercase tracking-wider border border-red-100 dark:border-red-900/30 mb-6">
                         Fitur Unggulan
                     </div>
-                    <h2 class="text-4xl lg:text-5xl font-black mb-6 tracking-tight text-zinc-900 dark:text-white leading-tight">
-                        Segalanya yang Anda Butuhkan untuk <br class="hidden md:block"/>
-                        <span class="text-red-600">Naik Kelas</span> Jadi Modern
+                    <h2 class="text-4xl font-black mb-6 tracking-tight text-zinc-900 dark:text-white leading-tight">
+                        Fitur Pintar untuk <span class="text-red-600">Warung Cerdas</span>
                     </h2>
-                    <p class="text-zinc-500 dark:text-zinc-400 text-xl leading-relaxed">
-                        KelontongPOS bukan sekadar mesin kasir. Kami membangun ekosistem digital terpadu untuk efisiensi maksimal toko Anda.
+                    <p class="text-zinc-500 dark:text-zinc-400 text-lg">
+                        Kelola stok anti bocor, laporan keuangan otomatis, dan pantau expired date tanpa pusing.
                     </p>
                 </div>
 
-                <!-- Showcase Items -->
-                <div class="space-y-32">
-                    <!-- Showcase 1: Intelligent Dashboard -->
-                    <div class="flex flex-col lg:flex-row items-center gap-16">
-                        <div class="w-full lg:w-1/2 space-y-6 order-2 lg:order-1">
-                            <div class="inline-flex p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl">
-                                <TrendingUp :size="32" />
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1: Kasir -->
+                    <div class="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-600/10 hover:border-red-600/30">
+                        <div class="h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
+                            <img src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=600&auto=format&fit=crop" alt="Smart POS" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                        </div>
+                        <div class="p-8 space-y-4">
+                            <div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl flex items-center justify-center transition-colors duration-500 group-hover:bg-red-600 group-hover:text-white">
+                                <Zap :size="24" />
                             </div>
-                            <h3 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">Dashboard Analitik Pintar</h3>
-                            <p class="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                                Jangan biarkan data Anda menganggur. Pantau kesehatan bisnis Anda secara real-time melalui grafik visual yang intuitif.
+                            <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Kasir Super Cepat</h3>
+                            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+                                Cukup scan barcode atau ketik nama barang. Sistem otomatis hitung kembalian dan cetak struk dalam hitungan detik.
                             </p>
-                            <ul class="space-y-4">
-                                <li class="flex items-start gap-3">
-                                    <div class="mt-1 bg-green-100 dark:bg-green-900/30 p-1 rounded-full text-green-600 dark:text-green-400">
-                                        <CheckCircle :size="16" />
-                                    </div>
-                                    <span class="text-zinc-700 dark:text-zinc-300 font-medium">Laporan Laba/Rugi Otomatis</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <div class="mt-1 bg-green-100 dark:bg-green-900/30 p-1 rounded-full text-green-600 dark:text-green-400">
-                                        <CheckCircle :size="16" />
-                                    </div>
-                                    <span class="text-zinc-700 dark:text-zinc-300 font-medium">Prediksi Arus Kas 30 Hari ke Depan</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <div class="mt-1 bg-green-100 dark:bg-green-900/30 p-1 rounded-full text-green-600 dark:text-green-400">
-                                        <CheckCircle :size="16" />
-                                    </div>
-                                    <span class="text-zinc-700 dark:text-zinc-300 font-medium">AI Insights untuk Strategi Penjualan</span>
-                                </li>
-                            </ul>
                         </div>
-                        <div class="w-full lg:w-1/2 order-1 lg:order-2">
-                            <div class="relative group">
-                                <div class="absolute -inset-4 bg-gradient-to-tr from-red-600/20 to-orange-500/20 blur-3xl rounded-[32px] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                                <div class="relative bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-2xl">
-                                    <img src="https://images.unsplash.com/photo-1551288049-bbda3865c67d?q=80&w=1200&auto=format&fit=crop" alt="Dashboard Analytics preview" class="w-full h-auto object-cover" />
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Hover Color Accent -->
+                        <div class="absolute bottom-0 left-0 h-1 w-0 bg-red-600 transition-all duration-500 group-hover:w-full"></div>
                     </div>
 
-                    <!-- Showcase 2: Smart POS & QRIS -->
-                    <div class="flex flex-col lg:flex-row items-center gap-16">
-                        <div class="w-full lg:w-1/2 order-1">
-                            <div class="relative group">
-                                <div class="absolute -inset-4 bg-gradient-to-bl from-blue-600/20 to-purple-500/20 blur-3xl rounded-[32px] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                                <div class="relative bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-2xl">
-                                    <img src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1200&auto=format&fit=crop" alt="Smart POS preview" class="w-full h-auto object-cover" />
-                                </div>
-                            </div>
+                    <!-- Feature 2: AI Stock -->
+                    <div class="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-600/10 hover:border-orange-600/30">
+                        <div class="h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800 text-white">
+                            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=600&auto=format&fit=crop" alt="Inventory" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                         </div>
-                        <div class="w-full lg:w-1/2 space-y-6 order-2">
-                            <div class="inline-flex p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl">
-                                <CreditCard :size="32" />
+                        <div class="p-8 space-y-4">
+                            <div class="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-2xl flex items-center justify-center transition-colors duration-500 group-hover:bg-orange-600 group-hover:text-white">
+                                <Sparkles :size="24" />
                             </div>
-                            <h3 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">Kasir Cepat & Pembayaran QRIS</h3>
-                            <p class="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                                Percepat antrean dengan interface kasir yang sangat responsif. Mendukung berbagai metode pembayaran modern tanpa setup ribet.
+                            <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Asisten Anti "Stok Mati"</h3>
+                            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+                                AI kami memberitahu barang mana yang laris manis dan barang mana yang sudah 45 hari tidak laku. Optimalkan perputaran modal!
                             </p>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-900 border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 transition-colors">
-                                    <Zap class="text-red-600 mb-2" :size="20"/>
-                                    <div class="font-bold text-sm text-zinc-800 dark:text-zinc-200">Transaksi < 3 Detik</div>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-900 border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 transition-colors">
-                                    <Sparkles class="text-orange-600 mb-2" :size="20"/>
-                                    <div class="font-bold text-sm text-zinc-800 dark:text-zinc-200">Integrasi Dynamic QRIS</div>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-900 border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 transition-colors">
-                                    <LayoutGrid class="text-blue-600 mb-2" :size="20"/>
-                                    <div class="font-bold text-sm text-zinc-800 dark:text-zinc-200">Katalog Produk Visual</div>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-900 border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 transition-colors">
-                                    <Clock class="text-purple-600 mb-2" :size="20"/>
-                                    <div class="font-bold text-sm text-zinc-800 dark:text-zinc-200">Riwayat Per Shift</div>
-                                </div>
-                            </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 h-1 w-0 bg-orange-600 transition-all duration-500 group-hover:w-full"></div>
                     </div>
 
-                    <!-- Showcase 3: Automated Inventory -->
-                    <div class="flex flex-col lg:flex-row items-center gap-16">
-                        <div class="w-full lg:w-1/2 space-y-6 order-2 lg:order-1">
-                            <div class="inline-flex p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl">
-                                <Box :size="32" />
+                    <!-- Feature 3: Finance -->
+                    <div class="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-green-600/10 hover:border-green-600/30">
+                        <div class="h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
+                            <img src="https://images.unsplash.com/photo-1551288049-bbda3865c67d?q=80&w=600&auto=format&fit=crop" alt="Reports" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                        </div>
+                        <div class="p-8 space-y-4">
+                            <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-2xl flex items-center justify-center transition-colors duration-500 group-hover:bg-green-600 group-hover:text-white">
+                                <TrendingUp :size="24" />
                             </div>
-                            <h3 class="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">Otomasi Inventori & Stok</h3>
-                            <p class="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                                Hilangkan rasa khawatir kehabisan stok. Sistem kami bekerja 24/7 memantau pergerakan barang Anda hingga ke satuan terkecil.
+                            <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Laporan Untung Rugi</h3>
+                            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+                                Lihat omzet harian, mingguan, dan bulanan secara visual. Tahu persis berapa keuntungan bersih yang bisa langsung masuk kantong.
                             </p>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-4 p-4 rounded-2xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
-                                    <AlertTriangle class="text-red-600 shrink-0" :size="24" />
-                                    <div>
-                                        <div class="font-bold text-red-900 dark:text-red-400">Peringatan Stok Menipis</div>
-                                        <div class="text-xs text-red-700 dark:text-red-500/80">Notifikasi otomatis saat barang harus segera diorder ulang.</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
-                                    <Clock class="text-zinc-600 shrink-0" :size="24" />
-                                    <div>
-                                        <div class="font-bold text-zinc-800 dark:text-zinc-200">Pelacak Expired Date</div>
-                                        <div class="text-xs text-zinc-500">Mencegah kerugian akibat barang kadaluarsa yang telat disadari.</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                        <div class="w-full lg:w-1/2 order-1 lg:order-2">
-                            <div class="relative group">
-                                <div class="absolute -inset-4 bg-gradient-to-br from-green-600/20 to-teal-500/20 blur-3xl rounded-[32px] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                                <div class="relative bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-2xl">
-                                    <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200&auto=format&fit=crop" alt="Inventory Management preview" class="w-full h-auto object-cover" />
-                                </div>
-                            </div>
-                        </div>
+                        <div class="absolute bottom-0 left-0 h-1 w-0 bg-green-600 transition-all duration-500 group-hover:w-full"></div>
                     </div>
                 </div>
             </div>
