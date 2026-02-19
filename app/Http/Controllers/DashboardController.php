@@ -28,7 +28,9 @@ class DashboardController extends Controller
         InsightEngineService $insightService,
         StockIntelligenceService $stockService,
         CompetitorPriceService $competitorService,
-        AlertService $alertService
+        AlertService $alertService,
+        \App\Services\ConsolidationService $consolidationService,
+        PricingService $pricingService
     ) {
         $storeId = auth()->user()->store_id ?? 1;
         $cacheKey = "dashboard_metrics_store_{$storeId}";
@@ -122,10 +124,37 @@ class DashboardController extends Controller
                 \Illuminate\Support\Facades\Log::error("Dashboard Services Error: " . $e->getMessage());
             }
 
+            // 5. Enterprise Consolidation (HQ Level)
+            $consolidatedData = [];
+            $marginAlerts = [];
+            try {
+                // If user is Owner/Admin, show group performance
+                if (auth()->user()->role === 'owner' || auth()->user()->role === 'admin') {
+                    $consolidatedData = $consolidationService->getConsolidatedSales(now()->startOfMonth(), now()->endOfMonth());
+                }
+
+                // Check for margin violations
+                $lowMarginProducts = Product::where('store_id', $storeId)
+                    ->whereRaw('(price - cost_price) / NULLIF(price, 0) * 100 < min_margin')
+                    ->take(5)
+                    ->get();
+                
+                foreach ($lowMarginProducts as $product) {
+                    $marginAlerts[] = [
+                        'name' => $product->name,
+                        'current_margin' => $pricingService->calculateMargin($product, $product->price),
+                        'min_margin' => $product->min_margin
+                    ];
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Dashboard Enterprise Error: " . $e->getMessage());
+            }
+
             return compact(
                 'totalProducts', 'totalCustomers', 'todaySales', 'thisMonthSales', 
                 'pendingAlerts', 'backupCount', 'salesHistory', 'topProducts', 
-                'recommendations', 'cashflowProjections', 'stockData', 'pricingData', 'alerts'
+                'recommendations', 'cashflowProjections', 'stockData', 'pricingData', 'alerts',
+                'consolidatedData', 'marginAlerts'
             );
         });
 

@@ -6,8 +6,9 @@ import {
     Package, 
     Users, 
     Database, 
-    Activity,
-    Sparkles
+    Sparkles,
+    ShieldAlert,
+    BarChartHorizontal
 } from 'lucide-vue-next';
 import HealthWidget from '@/Components/Dashboard/HealthWidget.vue';
 import LeakWarningPanel from '@/Components/Dashboard/LeakWarningPanel.vue';
@@ -32,9 +33,10 @@ const props = defineProps({
     cashflowProjections: Object,
     employeeRisks: Array,
     aiInsights: Array,
-    stockData: Object,
     pricingData: Object,
-    alerts: Array
+    alerts: Array,
+    consolidatedData: Object,
+    marginAlerts: Array
 });
 
 const formatCurrency = (value) => {
@@ -205,6 +207,47 @@ onUnmounted(() => {
 
                     <!-- Expiry Monitor -->
                     <ExpiryPanel />
+
+                    <!-- Margin Guardian (Enterprise) -->
+                    <div v-if="marginAlerts && marginAlerts.length > 0" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border-l-4 border-l-red-600 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                        <h3 class="font-bold flex items-center gap-2 mb-4 text-red-700">
+                            <ShieldAlert :size="20" />
+                            Margin Guardian
+                        </h3>
+                        <div class="space-y-3">
+                            <div v-for="alert in marginAlerts" :key="alert.name" class="text-xs">
+                                <div class="flex justify-between font-bold text-zinc-800 dark:text-zinc-200">
+                                    <span>{{ alert.name }}</span>
+                                    <span class="text-red-600">{{ alert.current_margin }}%</span>
+                                </div>
+                                <div class="text-[10px] text-zinc-400">Min Margin Required: {{ alert.min_margin }}%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HQ Consolidation (Enterprise) -->
+                    <div v-if="consolidatedData && consolidatedData.branches" class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
+                        <h3 class="font-bold flex items-center gap-2 mb-4 text-zinc-800 dark:text-zinc-200">
+                            <BarChartHorizontal :size="20" class="text-zinc-400" />
+                            HQ Group Profit
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                                <p class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Net Group Performance</p>
+                                <p class="text-lg font-black text-emerald-900 dark:text-emerald-200">{{ formatCurrency(consolidatedData.net_group_performance) }}</p>
+                            </div>
+                            <div class="text-xs space-y-1">
+                                <div class="flex justify-between text-zinc-500">
+                                    <span>Gross Group Sales</span>
+                                    <span>{{ formatCurrency(consolidatedData.gross_group_sales) }}</span>
+                                </div>
+                                <div class="flex justify-between text-red-500">
+                                    <span>Internal Eliminations</span>
+                                    <span>-{{ formatCurrency(consolidatedData.internal_elimination) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Profit Leak Risk -->
                     <LeakWarningPanel v-if="riskScore" :riskScore="riskScore" />

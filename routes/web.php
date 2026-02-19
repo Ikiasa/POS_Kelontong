@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:owner'])->group(function () {
     Route::delete('/admin/suppliers/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'destroy'])->name('admin.suppliers.destroy');
     Route::get('/audit', [\App\Http\Controllers\AuditController::class, 'index'])->name('audit.index');
     Route::get('/backups', [\App\Http\Controllers\BackupController::class, 'index'])->name('backups.index');
+    Route::get('/hq-intelligence', [\App\Http\Controllers\HQIntelligenceController::class, 'index'])->name('hq.intelligence');
 });
 
 // Operational Routes (Manager & Owner, Cashier limited)
