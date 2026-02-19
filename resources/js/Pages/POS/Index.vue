@@ -229,11 +229,11 @@ const functionKeys = [
                     <div class="flex gap-8 text-right hidden xl:flex">
                         <div class="flex flex-col justify-center">
                             <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Subtotal</span>
-                            <span class="text-xl font-bold text-zinc-300">{{ formatCurrency(store.subtotal) }}</span>
+                            <span class="text-lg font-semibold text-zinc-300 tracking-tight">{{ formatCurrency(store.subtotal) }}</span>
                         </div>
                         <div class="flex flex-col justify-center">
                             <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Discount</span>
-                            <span class="text-xl font-bold text-danger">- {{ formatCurrency(discountFromPoints) }}</span>
+                            <span class="text-lg font-semibold text-danger tracking-tight">- {{ formatCurrency(discountFromPoints) }}</span>
                         </div>
                     </div>
 
@@ -241,13 +241,13 @@ const functionKeys = [
                     <div class="h-12 w-px bg-zinc-700 hidden lg:block"></div>
 
                     <!-- Grand Total (Hero) -->
-                    <div class="flex flex-col items-end justify-center min-w-[200px]">
-                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">Grand Total</span>
-                        <div class="relative leading-none flex items-baseline gap-1">
-                             <span class="text-6xl font-black tracking-tighter text-white tabular-nums drop-shadow-lg">
+                    <div class="flex flex-col items-end justify-center min-w-[180px]">
+                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Grand Total</span>
+                        <div class="relative leading-none flex items-baseline gap-1.5">
+                             <span class="text-5xl font-extrabold tracking-tighter text-white tabular-nums">
                                 {{ formatCurrency(store.total - discountFromPoints).replace('Rp', '').trim() }}
                             </span>
-                            <span class="text-lg font-bold text-zinc-600">Rp</span>
+                            <span class="text-base font-medium text-zinc-500">Rp</span>
                         </div>
                     </div>
 
