@@ -213,7 +213,7 @@ const functionKeys = [
                             v-model="store.searchQuery"
                             @keydown.enter="handleSearch"
                             type="text" 
-                            class="w-full h-14 pl-12 pr-4 bg-zinc-800 text-white text-xl font-bold border-2 border-zinc-700 rounded-lg focus:ring-4 focus:ring-brand-900/50 focus:border-brand-600 focus:outline-none uppercase transition-all shadow-inner placeholder-zinc-600"
+                            class="w-full h-14 pl-12 pr-4 bg-zinc-800 text-white text-lg font-semibold border-2 border-zinc-700 rounded-lg focus:ring-4 focus:ring-brand-900/50 focus:border-brand-600 focus:outline-none uppercase transition-all shadow-inner placeholder-zinc-600"
                             placeholder="SCAN BARCODE..."
                         />
                         <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" :size="20" />
