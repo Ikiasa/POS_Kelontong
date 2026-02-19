@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createPinia } from 'pinia';
 import { ZiggyVue } from 'ziggy-js';
 import VueApexCharts from 'vue3-apexcharts';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 const appName = import.meta.env.VITE_APP_NAME || 'POS System';
 
@@ -14,12 +15,18 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         const pinia = createPinia();
 
-        return createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
             .use(pinia)
-            .use(VueApexCharts)
-            .mount(el);
+            .use(VueApexCharts);
+
+        app.mount(el);
+
+        // Inject Speed Insights
+        injectSpeedInsights();
+
+        return app;
     },
     progress: {
         color: '#4B5563',
