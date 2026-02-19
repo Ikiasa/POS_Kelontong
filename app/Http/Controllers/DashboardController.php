@@ -14,7 +14,8 @@ use App\Services\EmployeeRiskService;
 use App\Services\InsightEngineService;
 use App\Services\StockIntelligenceService;
 use App\Services\CompetitorPriceService;
-use App\Services\AlertService;
+use App\Services\PricingService;
+use App\Services\ConsolidationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -29,19 +30,20 @@ class DashboardController extends Controller
         StockIntelligenceService $stockService,
         CompetitorPriceService $competitorService,
         AlertService $alertService,
-        \App\Services\ConsolidationService $consolidationService,
+        ConsolidationService $consolidationService,
         PricingService $pricingService
     ) {
         $storeId = auth()->user()->store_id ?? 1;
         $cacheKey = "dashboard_metrics_store_{$storeId}";
 
-        // Use caching to speed up cloud performance
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(10), function() use (
             $storeId, 
             $replenishmentService, 
             $cashflowService, 
             $stockService, 
-            $competitorService
+            $competitorService,
+            $consolidationService,
+            $pricingService
         ) {
             // Initialize defaults
             $totalProducts = 0;
