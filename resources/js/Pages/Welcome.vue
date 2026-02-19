@@ -330,7 +330,7 @@ const demoProducts = [
                     <!-- Feature 3: Finance -->
                     <div class="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-gray-100 dark:border-zinc-800 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-green-600/10 hover:border-green-600/30">
                         <div class="h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
-                            <img src="https://images.unsplash.com/photo-1551288049-bbda3865c67d?q=80&w=600&auto=format&fit=crop" alt="Reports" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600&auto=format&fit=crop" alt="Reports" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                         </div>
                         <div class="p-8 space-y-4">
                             <div class="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-2xl flex items-center justify-center transition-colors duration-500 group-hover:bg-green-600 group-hover:text-white">
