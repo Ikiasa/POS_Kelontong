@@ -290,7 +290,6 @@ const functionKeys = [
                      <span class="text-[10px] font-black uppercase tracking-widest text-brand-300">SYNCING DATA...</span>
                 </div>
                 <div class="flex flex-col items-center leading-none gap-0.5">
-                <div class="flex flex-col items-center leading-none gap-0.5">
                     <span class="opacity-75 text-[10px] uppercase tracking-wider text-zinc-400">Date</span>
                     <span class="font-bold">{{ currentDate }}</span>
                 </div>

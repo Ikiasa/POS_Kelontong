@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import MainLayout from '@/Layouts/MainLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { ShieldAlert, RefreshCw, Copy, Check } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -20,11 +20,7 @@ const copyCode = (code, id) => {
 <template>
     <Head title="Store Management" />
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Branch Management</h2>
-        </template>
-
+    <MainLayout title="Branch Management">
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -65,5 +61,5 @@ const copyCode = (code, id) => {
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </MainLayout>
 </template>

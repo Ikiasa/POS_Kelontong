@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
-import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 export default defineConfig({
     plugins: [
@@ -18,50 +17,10 @@ export default defineConfig({
                 },
             },
         }),
-        tailwindcss(),
-        VitePWA({
-            registerType: 'autoUpdate',
-            injectRegister: 'auto',
-            manifest: {
-                name: 'POS Kelontong Modern',
-                short_name: 'POSKelontong',
-                description: 'Point of Sale modern for Kelontong businesses',
-                theme_color: '#4f46e5',
-                icons: [
-                    {
-                        src: 'https://via.placeholder.com/192',
-                        sizes: '192x192',
-                        type: 'image/png'
-                    },
-                    {
-                        src: 'https://via.placeholder.com/512',
-                        sizes: '512x512',
-                        type: 'image/png'
-                    }
-                ]
-            }
-        }),
     ],
-    build: {
-        chunkSizeWarningLimit: 1600,
-        rollupOptions: {
-            output: {
-                manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        return 'vendor';
-                    }
-                }
-            }
-        }
-    },
-    server: {
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
-        },
-    },
     resolve: {
         alias: {
-            '@': '/resources/js',
+            '@': path.resolve(__dirname, 'resources/js'),
         },
     },
 });
