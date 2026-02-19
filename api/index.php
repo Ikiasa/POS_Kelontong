@@ -42,19 +42,45 @@ if ($isVercel) {
     
     // Validate APP_KEY length
     $appKey = getenv('APP_KEY');
-    if ($appKey && str_starts_with($appKey, 'base64:')) {
-        $key = base64_decode(substr($appKey, 7));
-        if (strlen($key) !== 32) {
+    $isValid = false;
+    $errorMessage = "";
+
+    if ($appKey) {
+        if (str_starts_with($appKey, 'base64:')) {
+            $key = base64_decode(substr($appKey, 7));
+            if (strlen($key) === 32) {
+                $isValid = true;
+            } else {
+                $errorMessage = "Derived key length is " . strlen($key) . " bytes. Required: 32 bytes.";
+            }
+        } else {
+            // No prefix
+            if (strlen($appKey) === 32) {
+                $isValid = true; // Raw 32 chars key check
+            } elseif (strlen($appKey) === 44) {
+                 $errorMessage = "It looks like you pasted a base64 string (44 chars) but forgot the <code>base64:</code> prefix.";
+                 // Attempt to decode it anyway to see if it's a valid base64 string of 32 bytes
+                 $decodedKey = base64_decode($appKey, true);
+                 if ($decodedKey !== false && strlen($decodedKey) === 32) {
+                     $isValid = true; // Treat as valid if it's a 44-char base64 string that decodes to 32 bytes
+                     $errorMessage .= " However, it decodes to a valid 32-byte key. Consider adding the prefix for clarity.";
+                 }
+            } else {
+                $errorMessage = "Key length is " . strlen($appKey) . " chars. Required: 32 bytes raw or 'base64:' + 44 chars.";
+            }
+        }
+    }
+
+    if (!$isValid && $appKey) {
              http_response_code(200);
              echo "<div style='font-family: sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; border: 2px solid #f59e0b; border-radius: 8px;'>";
-             echo "<h1 style='color: #f59e0b;'>⚠️ APP_KEY Configuraton Error</h1>";
-             echo "<p>Your <strong>APP_KEY</strong> seems valid base64 but its length is incorrect.</p>";
-             echo "<p>Required: <strong>32 bytes</strong> (for AES-256-CBC)</p>";
-             echo "<p>Actual: <strong>" . strlen($key) . " bytes</strong></p>";
-             echo "<p>Please regenerate it: <code>php artisan key:generate --show</code> and update Vercel Settings.</p>";
+             echo "<h1 style='color: #f59e0b;'>⚠️ APP_KEY Configuration Error</h1>";
+             echo "<p>Your <strong>APP_KEY</strong> is invalid.</p>";
+             echo "<p><strong>Reason:</strong> $errorMessage</p>";
+             echo "<p>Please ensure you copied the FULL key including <code>base64:</code> prefix.</p>";
+             echo "<p>Value detected (first 5 chars): <code>" . htmlspecialchars(substr($appKey, 0, 5)) . "...</code></p>";
              echo "</div>";
              exit;
-        }
     }
 
     // 3. Configure Cache Paths for Vercel (Read-Only Filesystem Fix)
