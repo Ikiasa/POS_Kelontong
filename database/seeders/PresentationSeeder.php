@@ -13,6 +13,7 @@ use App\Models\AIInsight;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -20,6 +21,12 @@ class PresentationSeeder extends Seeder
 {
     public function run(): void
     {
+        // 0. Clear old dummy data to avoid unique conflicts
+        Schema::disableForeignKeyConstraints();
+        TransactionItem::truncate();
+        Transaction::truncate();
+        Schema::enableForeignKeyConstraints();
+
         // 1. Get Main Store and Owner
         $store = Store::first() ?? Store::create(['name' => 'Kelontong Barokah']);
         $user = User::where('email', 'ikiasaku@gmail.com')->first() ?? User::first();
@@ -131,7 +138,7 @@ class PresentationSeeder extends Seeder
             $grand_total = $subtotal + $tax;
             
             $transaction = Transaction::create([
-                'id' => Str::uuid(),
+                'id' => (string)Str::uuid(),
                 'store_id' => $store->id,
                 'user_id' => $user->id,
                 'invoice_number' => 'INV-' . $date->format('ymd') . '-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
@@ -154,14 +161,15 @@ class PresentationSeeder extends Seeder
 
         // 6. Business Health Score
         BusinessHealthScore::updateOrCreate(
-            ['store_id' => $store->id],
+            ['store_id' => $store->id, 'calculated_at' => now()->toDateString()],
             [
-                'score' => 82.5,
-                'metrics' => [
+                'score' => 82,
+                'breakdown' => [
                     'profit_margin' => 15.2,
                     'inventory_turnover' => 4.8,
                     'customer_retention' => 65.0
                 ],
+                'explanation' => 'Performa toko stabil dengan margin profit yang baik.',
                 'calculated_at' => now()
             ]
         );

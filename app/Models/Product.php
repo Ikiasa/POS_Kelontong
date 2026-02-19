@@ -39,4 +39,9 @@ class Product extends Model
     {
         return $this->hasMany(PriceTier::class);
     }
+
+    public function isWeighted()
+    {
+        return $this->is_weighted;
+    }
 }

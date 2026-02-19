@@ -24,6 +24,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'owner'
         ]);
 
+        // Custom User (Ikiasa)
+        User::updateOrCreate(['email' => 'ikiasaku@gmail.com'], [
+            'name' => 'Ikiasa Owner',
+            'password' => bcrypt('H3799@6w'),
+            'role' => 'owner'
+        ]);
+
         // Manager
         User::updateOrCreate(['email' => 'manager@pos.com'], [
             'name' => 'Store Manager',

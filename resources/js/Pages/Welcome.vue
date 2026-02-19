@@ -366,26 +366,26 @@ const demoProducts = [
                         <!-- Operational -->
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Wallet :size="20" />
+                                <Zap :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">QRIS Dinamis</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Terima pembayaran e-wallet (GoPay, OVO, Dana) dengan QR code otomatis per transaksi.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Auto-PR (Replenishment)</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Sistem cerdas yang otomatis membuat Purchase Request saat stok menipis.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Users :size="20" />
+                                <CheckCircle :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Manajemen Pelanggan</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Simpan data pelanggan, riwayat belanja, dan berikan promo loyalitas khusus.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">12-Digit Checksum</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Penomoran otomatis dengan validasi Checksum untuk akurasi inventori 100%.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <RefreshCcw :size="20" />
+                                <Truck :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Sistem Retur Mudah</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Kelola pengembalian barang rusak atau salah beli dengan pencatatan stok yang akurat.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Logika Konsinyasi</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Manajemen barang titipan dengan perhitungan bagi hasil otomatis per transaksi.</p>
                         </div>
 
                         <!-- Inventory -->
@@ -408,10 +408,10 @@ const demoProducts = [
                         <!-- Financial -->
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
                             <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <PieChart :size="20" />
+                                <BarChart3 :size="20" />
                             </div>
-                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Expense Tracking</h4>
-                            <p class="text-sm text-zinc-500 leading-relaxed">Catat semua pengeluaran operasional (listrik, gaji, sewa) untuk tahu profit bersih.</p>
+                            <h4 class="font-bold text-zinc-900 dark:text-white mb-2">Konsolidasi Laporan</h4>
+                            <p class="text-sm text-zinc-500 leading-relaxed">Gabungkan laporan keuangan dari banyak cabang dengan eliminasi otomatis.</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl transition-all group">
