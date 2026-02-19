@@ -49,8 +49,18 @@ require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
 // Vercel specific adjustments
+// Vercel specific adjustments
 if (isset($_ENV['VERCEL'])) {
+    // Redirect storage
     $app->useStoragePath('/tmp/storage');
+    
+    // Redirect bootstrap cache (packages.php, services.php)
+    // Laravel 11 uses these env vars to determine cache paths
+    $_ENV['APP_PACKAGES_CACHE'] = '/tmp/cache/packages.php';
+    $_ENV['APP_SERVICES_CACHE'] = '/tmp/cache/services.php';
+    $_ENV['APP_ROUTES_CACHE'] = '/tmp/cache/routes-v7.php';
+    $_ENV['APP_EVENTS_CACHE'] = '/tmp/cache/events.php';
+    $_ENV['APP_CONFIG_CACHE'] = '/tmp/cache/config.php';
     
     // Ensure directories exist
     if (!is_dir('/tmp/storage')) {
@@ -59,6 +69,9 @@ if (isset($_ENV['VERCEL'])) {
         mkdir('/tmp/storage/framework/cache', 0755, true);
         mkdir('/tmp/storage/framework/sessions', 0755, true);
         mkdir('/tmp/storage/logs', 0755, true);
+    }
+    if (!is_dir('/tmp/cache')) {
+        mkdir('/tmp/cache', 0755, true);
     }
 }
 
@@ -70,6 +83,13 @@ try {
     echo "<h1>🔥 Vercel Error 500</h1>";
     echo "<p><strong>Message:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
     echo "<p><strong>File:</strong> " . htmlspecialchars($e->getFile()) . ":" . $e->getLine() . "</p>";
+    if ($prev = $e->getPrevious()) {
+        echo "<hr><h3 style='color: orange'>Root Cause (Previous Exception):</h3>";
+        echo "<p><strong>Message:</strong> " . htmlspecialchars($prev->getMessage()) . "</p>";
+        echo "<p><strong>File:</strong> " . htmlspecialchars($prev->getFile()) . ":" . $prev->getLine() . "</p>";
+        echo "<pre>" . htmlspecialchars($prev->getTraceAsString()) . "</pre>";
+    }
+    echo "<hr><h3>Stack Trace:</h3>";
     echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
     exit;
 }
