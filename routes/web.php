@@ -119,45 +119,23 @@ Route::get('/vue-layout', function () {
 
 // OLD vue-pos REMOVED
 
-// Auth Routes (Temporary for Migration)
+// Auth Routes
 Route::middleware('guest')->group(function () {
-    Route::get('login', function () {
-        return Inertia\Inertia::render('Auth/Login');
-    })->name('login');
+    Route::get('login', [\App\Http\Controllers\Auth\AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [\App\Http\Controllers\Auth\AuthController::class, 'login']);
+    
+    Route::get('forgot-password', [\App\Http\Controllers\Auth\AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('forgot-password', [\App\Http\Controllers\Auth\AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('reset-password/{token}', [\App\Http\Controllers\Auth\AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('reset-password', [\App\Http\Controllers\Auth\AuthController::class, 'resetPassword'])->name('password.update');
+});
 
-    Route::post('login', function (\Illuminate\Http\Request $request) {
-        \Illuminate\Support\Facades\Log::info('Login attempt for: ' . $request->email);
-        
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+Route::post('logout', [\App\Http\Controllers\Auth\AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-        if (Illuminate\Support\Facades\Auth::attempt($credentials)) {
-            \Illuminate\Support\Facades\Log::info('Auth::attempt succeeded for: ' . $request->email);
-            $request->session()->regenerate();
-            \Illuminate\Support\Facades\Log::info('Session regenerated. User ID: ' . auth()->id());
-            return redirect()->intended('dashboard');
-        }
-
-        \Illuminate\Support\Facades\Log::warning('Auth::attempt FAILED for: ' . $request->email);
-
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
-    });
-    // Returns
+// Legacy Returns & Vouchers
+Route::middleware(['auth'])->group(function () {
     Route::get('/returns/create', [\App\Http\Controllers\ReturnController::class, 'create'])->name('returns.create');
     Route::post('/returns', [\App\Http\Controllers\ReturnController::class, 'store'])->name('returns.store');
-
-    // Vouchers & Loyalty
     Route::post('/api/vouchers/validate', [\App\Http\Controllers\VoucherController::class, 'validateCode'])->name('vouchers.validate');
     Route::post('/api/vouchers/exchange', [\App\Http\Controllers\VoucherController::class, 'exchangePoints'])->name('vouchers.exchange');
 });
-
-Route::post('logout', function (\Illuminate\Http\Request $request) {
-    Illuminate\Support\Facades\Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-    return redirect('/');
-})->name('logout')->middleware('auth');

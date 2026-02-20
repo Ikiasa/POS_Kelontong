@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import Input from '@/Components/UI/Input.vue';
 import Button from '@/Components/UI/Button.vue';
 import { User, Lock } from 'lucide-vue-next';
@@ -34,6 +34,10 @@ const submit = () => {
 
             <h2 class="text-center text-2xl font-bold text-zinc-900 dark:text-white mb-8">Sign in to your account</h2>
 
+            <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+                {{ status }}
+            </div>
+
             <form @submit.prevent="submit" class="space-y-6">
                 <Input 
                     v-model="form.email"
@@ -59,6 +63,14 @@ const submit = () => {
                         <input type="checkbox" v-model="form.remember" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
                         <span class="ml-2 text-sm text-zinc-600 dark:text-zinc-400">Remember me</span>
                     </label>
+
+                    <Link
+                        v-if="true"
+                        :href="route('password.request')"
+                        class="underline text-sm text-zinc-600 dark:text-zinc-400 hover:text-red-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                        Forgot your password?
+                    </Link>
                 </div>
 
                 <Button class="w-full" :loading="form.processing">
